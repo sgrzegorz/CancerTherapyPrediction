@@ -8,52 +8,31 @@ import tempfile
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-# %matplotlib inline
 from scipy.signal import argrelextrema
 
-from asymilacja.model.datasets import ribba_dataset
 
 # pyabc.settings.set_figure_params('pyabc')  # for beautified plots
+from sklearn import preprocessing
+
 from asymilacja.model.CancerModelClass2 import CancerModel
 from asymilacja.model.datasets import klusek_dataset
+from asymilacja.paramteres.Parameters2 import plot_simple_results
 
+df = pd.read_csv("asymilacja/trening/okres.csv")
 
-df = klusek_dataset("data/klusek/2dawki.txt")
-df1 = df.copy()
-maximums = argrelextrema(df.prolif_cells.to_numpy(), np.greater)[0]
-t = [df.t[i] for i in maximums]
-df = df[(df.t > t[0])  &  (df.t < t[1])]
-# plt.plot(df.t,df.prolif_cells, label = "prolif")
-# plt.plot(df.t,df.dead_cells, label = "prolif")
-# plt.show()
-
-minimum = 70
-t = [df1.t[i] for i in maximums]
-
-def curement_function(x,x1,x2):
-    y1 = 1
-    y2 = 0
-    if(x1 == x2):
-        raise RuntimeError("x1 == x2")
-    if x < x1 or x > x2:
-        return 0
-    else:
-        return (y2 - y1) / (x2-x1)* x + (x2*y1 - x1*y2)/(x2-x1)
-
-curement = [curement_function(x,58.33333,69.16667) for x in df.t]
 count = len(df["t"])
 
 
-print()
+
 P = list(df.prolif_cells)
 Q = list(df.dead_cells)
-C = curement
+C = list(df.curement)
 observation = np.array([P,Q,C],dtype=float)
 
 
 
 def model(parameters):
-    X0 = [parameters["P"], parameters["Q"], parameters["C"]]
+    X0 = [parameters["P"], parameters["Q"], 1.0]
 
     lambda_p = parameters["lambda_p"]
     gamma_q = parameters["gamma_q"]
@@ -74,33 +53,45 @@ def model(parameters):
     Q = x[:, 1]
     C = x[:, 2]
 
-    return {"data" : np.array([P,Q,C],dtype=float)}
+    return {"data" : np.array([P,Q],dtype=float)}
 
 
-def distance(x, y):
+def distance(x, y):  # y to macierz ground truth, (zmienna observation)
     dif = 0
     for i in range(count):
-        dif += abs(x["data"][0][i] - y["data"][0][i])
-        dif += abs(x["data"][1][i] - y["data"][1][i])
-        dif += abs(x["data"][2][i] - y["data"][2][i])
-
-
+        if y["data"][0][i]!=0:
+            dif += abs(x["data"][0][i] - y["data"][0][i])
+        if y["data"][1][i] !=0:
+            dif += abs(x["data"][1][i] - y["data"][1][i])
     return dif
 
 
-prior = pyabc.Distribution(lambda_p=pyabc.RV("uniform", 1, 20), gamma_q=pyabc.RV("uniform", 1.0e-7, 3.0e-7), gamma_p=pyabc.RV("uniform", 0.1, 1), KDE=pyabc.RV("uniform", 0.01, 0.5),
-                           k_pq=pyabc.RV("uniform", 0.1, 0.7), K=pyabc.RV("uniform", 0.01, 0.5),eta=pyabc.RV("uniform", 0.01, 0.5),
-                           P= pyabc.RV("uniform", 1, 1e7),Q= pyabc.RV("uniform", 1, 1e7),C= pyabc.RV("uniform", 0.0, 1.1))
 
-abc = pyabc.ABCSMC(model, prior, distance, population_size=4)
+
+# prior = pyabc.Distribution(lambda_p=pyabc.RV("uniform", 0.0, 1.0), gamma_q=pyabc.RV("uniform", 0.0, 1.0), gamma_p=pyabc.RV("uniform", 0.0, 1.0), KDE=pyabc.RV("uniform", 0.0, 1.0),
+#                            k_pq=pyabc.RV("uniform", 0.0, 1.0), K=pyabc.RV("uniform", 0.0, 1.0)
+#                            )
+
+prior = pyabc.Distribution(#a=pyabc.RV("uniform", 1, 4),
+                           KDE=pyabc.RV("uniform", 0, 20), K=pyabc.RV("uniform", 50, 250), k_pq=pyabc.RV("uniform", 0, 20),
+                            lambda_p=pyabc.RV("uniform", 0, 20), gamma_p=pyabc.RV("uniform", 0, 20),
+                           gamma_q=pyabc.RV("uniform", 0, 20),P=pyabc.RV("uniform", 45, 55),Q=pyabc.RV("uniform", 0, 20),eta=pyabc.RV("uniform",0,1))
+
+abc = pyabc.ABCSMC(model, prior, distance, population_size=100)
 
 db_path = ("sqlite:///" +  os.path.join(tempfile.gettempdir(), "test.db"))
 
 abc.new(db_path, {"data": observation})
 
-history = abc.run(minimum_epsilon=100, max_nr_populations=40)
+history = abc.run(minimum_epsilon=1e3, max_nr_populations=50)
 
 history is abc.history
+run_id = history.id
+
+posterior2 = pyabc.MultivariateNormalTransition()
+posterior2.fit(*history.get_distribution(m=0))
+
+t_params = posterior2.rvs()
 
 posterior2 = pyabc.MultivariateNormalTransition()
 posterior2.fit(*history.get_distribution(m=0))
@@ -110,3 +101,47 @@ t_params = posterior2.rvs()
 t_params = np.array([[param, t_params[param]] for param in t_params])
 
 print(t_params)
+
+for i in range(50):
+    abc_continued = pyabc.ABCSMC(model, prior, distance)
+    abc_continued.load(db_path, run_id)
+    # try:
+    history = abc_continued.run(minimum_epsilon=.1, max_nr_populations=4)
+
+    posterior2 = pyabc.MultivariateNormalTransition()
+    posterior2.fit(*history.get_distribution(m=0))
+
+    t_params = posterior2.rvs()
+
+    print(t_params)
+
+    t_params = np.array([[param, t_params[param]] for param in t_params])
+
+    print(t_params)
+    # except AssertionError as e:
+    #     print(e)
+    #     break
+
+
+print(t_params)
+# import pickle
+# with open('filename.pickle', 'wb') as handle:
+#     pickle.dump(t_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+# with open('filename.pickle', 'rb') as handle:
+#     df1 = pickle.load(handle)
+
+t_params1 = {}
+for key, val in t_params:
+    t_params1[key] = float(val)
+# plot_results(t_params1,"data/klusek/2dawki.txt")
+plot_simple_results(t_params1,"data/klusek/2dawki.txt")
+
+
+
+
+# t_params = np.array([[param, t_params[param]] for param in t_params])
+
+
+
+
