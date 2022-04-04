@@ -1,7 +1,12 @@
-from asymilacja.model.CancerModelClass import CancerModel
+from asymilacja.model.CancerModelClass1 import CancerModel
 import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
+
+from asymilacja.model.datasets import ribba_dataset
+
+patient = ribba_dataset('/data/fig4.csv')
+patient = patient[patient["t"]>0]
 
 
 lambda_p = 0.6326
@@ -21,16 +26,14 @@ Q_p = 0.0
 C = 0.0
 
 x0 = [P, Q, Q_p, C]
-t = m1.time_interval(-20, 0) # start, end, steps
+t = m1.time_interval(0, 120) # start, end, steps
 x = odeint(m1.model,x0, t)
 
 P = x[:, 0]
 Q = x[:, 1]
 Q_p = x[:, 2]
 C = x[:, 3]
-C_copy = C
-t_copy = t
-
+M = x[:, 4]
 
 def cancer_plot(t,P,Q,Q_p):
     plt.plot(t,P,label="P",color='g')
@@ -39,26 +42,18 @@ def cancer_plot(t,P,Q,Q_p):
     plt.plot(t,P+Q+Q_p, label="P+Q+Q_p",color='w')
 cancer_plot(t,P,Q,Q_p)
 
-last = len(P)-1
-x1 = [P[last], Q[last], Q_p[last], 1.0]
-t = m1.time_interval(0, 200)
-m1 = CancerModel(lambda_p, delta_qp, gamma_q, gamma_p, KDE, k_qpp, k_pq, K)
-x = odeint(m1.model,x1, t)
-
-P = x[:, 0]
-Q = x[:, 1]
-Q_p = x[:, 2]
-C = x[:, 3]
 
 plt.title('Cancer')
 plt.legend(loc="lower right")
 plt.xlabel("months")
 plt.ylabel('volume [mm]')
 cancer_plot(t,P,Q,Q_p)
-plt.show()
+
+
+
 
 plt.title('Curement')
-plt.plot(t_copy,C_copy,color='b')
+plt.plot(t,C,color='b')
 plt.plot(t,C,color='b')
 plt.xlabel("months")
 plt.show()

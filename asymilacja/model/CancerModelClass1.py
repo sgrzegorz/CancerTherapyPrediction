@@ -12,10 +12,7 @@ class CancerModel:
         self.k_pq = k_pq # the rate constant for transition from proliferation to quiescence. Tumor specific
         self.K =K # fixed maximal tumor size 100 mm
 
-# P Proliferative tissue
-# Q Undamaged quiescent tissue
-# Q_p Damaged quiescent tissue
-# C koncentracja (stężenie) wirtualnego lekarstwa w tkankach
+
     def model(self, X, t):
         [P,Q, Q_p,C] = X
 
@@ -28,12 +25,12 @@ class CancerModel:
         k_pq =self.k_pq  # the rate constant for transition from proliferation to quiescence. Tumor specific
         K = self.K
 
-
+        dMdt = P + Q + Q_p
         dCdt = -KDE * C
         dPdt = lambda_p * P*(1 - (P + Q + Q_p)/K) + k_qpp * Q_p - k_pq * P - gamma_p * C * KDE * P
         dQdt = k_pq * P - gamma_q * C * KDE * Q
         dQ_pdt = gamma_q * C *KDE * Q - k_qpp * Q_p - delta_qp * Q_p
-        return [dPdt, dQdt, dQ_pdt,dCdt]
+        return [dPdt, dQdt, dQ_pdt,dCdt,dMdt]
 
     def time_interval(self, start,end):
         return np.linspace(start,end,np.abs(start-end)+1)

@@ -26,8 +26,8 @@ class CancerModel:
         eta = self.eta  # stopień żeby minimalna zawartosc lekarstwa nie wplywala na komorki
 
         dCdt = -KDE * C
-        dPdt = lambda_p * P*(1 - (P + Q)/K)  - k_pq * P - gamma_p * C * f(KDE,eta) * P
-        dQdt = k_pq * P - gamma_q * C * f(KDE,eta) * Q
+        dPdt = lambda_p * P*(1 - (P + Q)/K)  - k_pq * P - gamma_p * f(C,eta) * KDE * P
+        dQdt = k_pq * P - gamma_q * f(C,eta) * KDE* Q
         return [dPdt, dQdt,dCdt]
 
     def time_interval(self, start,end):
