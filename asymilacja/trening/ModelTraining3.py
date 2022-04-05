@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 
-patient = pd.read_csv('data/ribba/sztucznyDemo.csv')
+patient = pd.read_csv('data/ribba/sztucznyDemo1.csv')
 
 observation = np.array([ patient["P"].tolist(),  patient["Q"].tolist(), patient["Q_p"].tolist(), patient["C"].tolist()],dtype=float)
 count = len(patient["P"].tolist())
@@ -35,9 +35,10 @@ def model(parameters):
     KDE = parameters["KDE"]
     k_qpp = parameters["k_qpp"]
     k_pq = parameters["k_pq"]
+    K = parameters["K"]
 
 
-    m1 = CancerModel(lambda_p,delta_qp,gamma_q,gamma_p,KDE,k_qpp,k_pq)
+    m1 = CancerModel(lambda_p,delta_qp,gamma_q,gamma_p,KDE,k_qpp,k_pq,K)
     t = np.arange(len(patient["P"]))
 
     x = odeint(m1.model, X0, t)
@@ -76,8 +77,7 @@ def distance3(x, y):
     return dif
 
 
-prior = pyabc.Distribution(lambda_p=pyabc.RV("uniform", 0, 1), delta_qp=pyabc.RV("uniform", 0.1, 1), gamma_q=pyabc.RV("uniform", 0.1, 2), gamma_p=pyabc.RV("uniform", 0.1, 10), KDE=pyabc.RV("uniform", 0.01, 0.5), k_qpp=pyabc.RV("uniform", 0.0, 0.5),
-                           k_pq=pyabc.RV("uniform", 0.1, 0.7))
+prior = pyabc.Distribution(lambda_p=pyabc.RV("uniform", 0.01, 1), delta_qp=pyabc.RV("uniform", 0.01, 1), gamma_q=pyabc.RV("uniform", 0.01, 2), gamma_p=pyabc.RV("uniform", 0.01, 10), KDE=pyabc.RV("uniform", 0.01, 0.5), k_qpp=pyabc.RV("uniform", 0.01, 0.5), k_pq=pyabc.RV("uniform", 0.01, 0.7), K=pyabc.RV("uniform", 0.01, 200))
 
 dist = pyabc.distance.AggregatedDistance([distance,distance1,distance2,distance3])
 abc = pyabc.ABCSMC(model, prior, dist, population_size=100)
