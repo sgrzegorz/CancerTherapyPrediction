@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from scipy.integrate import odeint
 from scipy.signal import argrelextrema
@@ -25,14 +26,24 @@ from asymilacja.model.datasets import klusek_dataset
 #  t = df.t
 
 
+def plot_gt(path):
+ df = pd.read_csv(path)
+ figure, axis = plt.subplots(2, 1)
+ p1 = axis[0]
+ p2 = axis[1]
+
+ p1.plot(df.t, df.prolif_cells, 'g', label="P")
+ p1.plot(df.t, df.dead_cells, 'b', label="Q")
+ p1.legend()
+
+ p2.plot(df.t, df.curement, 'y', label="P")
+ plt.show()
 
 
 def plot_simple_results(pred,origin_path):
- C = 1.0
+
  K = pred['K']
  KDE = pred['KDE']
- P0 = pred['P']
- Q0= pred['Q']
  eta = pred['eta']
  gamma_p = pred['gamma_p']
  gamma_q = pred['gamma_q']
@@ -44,11 +55,12 @@ def plot_simple_results(pred,origin_path):
  p2 =axis[1]
 
  m1 = CancerModel(lambda_p,gamma_q,gamma_p,KDE,k_pq,K,eta)
- x0 = [P0, Q0, C]
 
- df = klusek_dataset(origin_path)
- t = df.t
- x = odeint(m1.model,x0, t)
+ df = pd.read_csv(origin_path)
+ X0 = [df['prolif_cells'].iloc[0], df['dead_cells'].iloc[0], df['curement'].iloc[0]]
+
+ t = np.arange(0,len(df.t))
+ x = odeint(m1.model,X0, t)
  P = x[:, 0]
  Q = x[:, 1]
  C = x[:, 2]
@@ -60,7 +72,7 @@ def plot_simple_results(pred,origin_path):
  p2.plot(t, C, 'y', label="P")
  plt.show()
 
-pred = {'K': 109.27498625317781, 'KDE': 0.6011433707451191, 'P': 49.33540506540792, 'Q': 4.189374073842397, 'eta': 0.23604759815002457, 'gamma_p': 9.263211986317149, 'gamma_q': 15.073014403126052, 'k_pq': 13.865416769630965, 'lambda_p': 5.61378685096156}
+pred={'K': 50.001204513304366, 'KDE': 0.0033496723965387794, 'eta': 0.24138819524532146, 'gamma_p': 19.9994624795766, 'gamma_q': 11.0700044135277, 'k_pq': 1.4587458361413838e-07, 'lambda_p': 0.09497209298923691}
+plot_simple_results(pred,"asymilacja/trening/okres.csv")
 
-# plot_simple_results(pred,"data/klusek/2dawki.txt")
-
+plot_gt("asymilacja/trening/okres.csv")
