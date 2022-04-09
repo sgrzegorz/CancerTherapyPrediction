@@ -3,7 +3,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from scipy.integrate import odeint
 
-from asymilacja.model.CancerModelClass import CancerModel
+from asymilacja.model.Cancer1Ribba import CancerModel
 
 parameters= {'K': 188.94642758955172, 'KDE': 0.09437746180369837, 'delta_qp': 0.7897257286288335, 'gamma_p': 9.457518420779783, 'gamma_q': 1.3771861428800967, 'k_pq': 0.4129043294229215, 'k_qpp': 0.013031352255034285, 'lambda_p': 0.605068075155125}
 patient = pd.read_csv('data/ribba/sztucznyDemo1.csv')
@@ -34,9 +34,11 @@ Q = x[:, 1]
 Q_p = x[:, 2]
 C = x[:, 3]
 
-plt.plot(t,P)
-plt.plot(t,Q)
-plt.plot(t,Q_p)
+plt.title("Model ribby po asymilacji parametrów")
+plt.plot(t,P,label="Profiferative",color='g')
+plt.plot(t,Q,label="Undamaged Quiescent",color='r')
+plt.plot(t,Q_p,label="Damaged Quiescent",color='black')
 plt.plot(t,C)
+plt.legend()
 plt.show()
 print(parameters)

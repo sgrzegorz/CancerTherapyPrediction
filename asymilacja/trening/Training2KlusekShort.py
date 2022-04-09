@@ -1,24 +1,17 @@
-import math
 import pyabc
 
 import numpy as np
 from scipy.integrate import odeint
-import scipy.stats as st
 import tempfile
 import os
 import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.signal import argrelextrema
-
 
 # pyabc.settings.set_figure_params('pyabc')  # for beautified plots
-from sklearn import preprocessing
 
-from asymilacja.model.CancerModelClass2 import CancerModel
-from asymilacja.model.datasets import klusek_dataset
-from asymilacja.paramteres.Parameters2 import plot_simple_results
+from asymilacja.model.Cancer2KlusekShort import CancerModel
+from asymilacja.paramteres.Vis2KlusekShort import plot_simple_results
 
-df = pd.read_csv("asymilacja/trening/okres.csv")
+df = pd.read_csv("data/klusek/gen/okres.csv")
 
 count = len(df["t"])
 

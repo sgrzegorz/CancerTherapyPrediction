@@ -2,8 +2,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.integrate import odeint
 
-from asymilacja.model.CancerModelClass2 import CancerModel
-from asymilacja.model.datasets import klusek_dataset
+from asymilacja.model.Cancer2KlusekShort import CancerModel
+from asymilacja.utlis.datasets import klusek_dataset
 from scipy.signal import argrelextrema
 
 

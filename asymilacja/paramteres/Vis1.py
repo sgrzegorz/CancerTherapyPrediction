@@ -1,10 +1,7 @@
-import numpy as np
 from matplotlib import pyplot as plt
 from scipy.integrate import odeint
-from scipy.signal import argrelextrema
 import pandas as pd
-from asymilacja.model.CancerModelClass2 import CancerModel
-from asymilacja.model.datasets import klusek_dataset
+from asymilacja.model.Cancer2KlusekShort import CancerModel
 
 
 def plot_results(pred):
@@ -31,7 +28,7 @@ def plot_results(pred):
  # p1.set(xlim=(0, list(df.t)[-1]))
  # p2.set(xlim=(0, list(df.t)[-1]))
 
- df = pd.read_csv("asymilacja/trening/calosc.csv")
+ df = pd.read_csv("data/klusek/calosc.csv")
 
  t = list(df.t)
 

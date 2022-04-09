@@ -1,22 +1,15 @@
-import math
 import pyabc
 
-import numpy as np
 from scipy.integrate import odeint
-import scipy.stats as st
 import tempfile
 import os
-import pandas as pd
 import matplotlib.pyplot as plt
 # %matplotlib inline
-from asymilacja.model.datasets import ribba_dataset
+from asymilacja.utlis.datasets import ribba_dataset
 
 # pyabc.settings.set_figure_params('pyabc')  # for beautified plots
-from asymilacja.model.CancerModelClass import CancerModel
+from asymilacja.model.Cancer1Ribba import CancerModel
 
-import numpy as np
-import pandas as pd
-from datetime import datetime as dt, timedelta as td, date
 # data = pd.read_csv('../data/Zakazenia30323112020.csv', sep=';', encoding='windows-1250')
 # data2 = data.copy()
 # data2["Date_reported"] = dt.strptime(data["Data"][0], "%d.%m.%Y").date()
@@ -26,7 +19,7 @@ from datetime import datetime as dt, timedelta as td, date
 
 #
 
-patient = ribba_dataset('/data/ribba/fig4.csv')
+patient = ribba_dataset('data/ribba/fig4.csv')
 patient = patient[patient["t"]>0]
 
 plt.scatter(patient.t,patient.mtd)

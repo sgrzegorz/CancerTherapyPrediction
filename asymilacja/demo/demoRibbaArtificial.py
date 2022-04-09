@@ -1,9 +1,9 @@
-from asymilacja.model.CancerModelClass import CancerModel
-import numpy as np
+from asymilacja.model.Cancer1Ribba import CancerModel
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
+import pandas as pd
 
-from asymilacja.model.datasets import ribba_dataset
+from asymilacja.utlis.datasets import ribba_dataset
 
 lambda_p = 0.6326
 delta_qp = 0.6455
@@ -34,14 +34,17 @@ t_copy = t
 
 
 def cancer_plot(t,P,Q,Q_p):
-    plt.plot(t,P,label="P",color='g')
-    plt.plot(t,Q,label="Q",color='r')
-    plt.plot(t,Q_p,label="Q_p",color='black')
+    plt.plot(t,P,label="Proliferative",color='g')
+    plt.plot(t,Q,label="Undamaged Quiescent",color='r')
+    plt.plot(t,Q_p,label="Damaged Quiescent",color='black')
     plt.plot(t,P+Q+Q_p, label="P+Q+Q_p",color='w')
 cancer_plot(t,P,Q,Q_p)
 
 last = len(P)-1
 x1 = [P[last], Q[last], Q_p[last], 1.0]
+
+print('Parameters from starting treatment')
+print(x1)
 t = m1.time_interval(0, 200)
 m1 = CancerModel(lambda_p, delta_qp, gamma_q, gamma_p, KDE, k_qpp, k_pq, K)
 x = odeint(m1.model,x1, t)
@@ -51,7 +54,7 @@ Q = x[:, 1]
 Q_p = x[:, 2]
 C = x[:, 3]
 
-plt.title('Cancer')
+plt.title('Model Ribby przed asymilacją paramtrów')
 plt.legend(loc="lower right")
 plt.xlabel("months")
 plt.ylabel('volume [mm]')
@@ -72,3 +75,9 @@ plt.plot(t,C,color='b')
 plt.xlabel("months")
 plt.show()
 
+df = pd.DataFrame()
+df['P'] = P
+df['Q'] = Q
+df['Q_p'] = Q_p
+df['C'] = C
+df.to_csv("data/ribba/sztucznyDemo.csv")

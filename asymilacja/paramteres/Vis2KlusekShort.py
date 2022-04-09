@@ -2,10 +2,9 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from scipy.integrate import odeint
-from scipy.signal import argrelextrema
 
-from asymilacja.model.CancerModelClass2 import CancerModel
-from asymilacja.model.datasets import klusek_dataset
+from asymilacja.model.Cancer2KlusekShort import CancerModel
+
 
 # def plot_results(pred,origin_path):
 #
@@ -72,7 +71,7 @@ def plot_simple_results(pred,origin_path):
  p2.plot(t, C, 'y', label="P")
  plt.show()
 
-pred={'K': 50.001204513304366, 'KDE': 0.0033496723965387794, 'eta': 0.24138819524532146, 'gamma_p': 19.9994624795766, 'gamma_q': 11.0700044135277, 'k_pq': 1.4587458361413838e-07, 'lambda_p': 0.09497209298923691}
+pred={'K': 50.255821611397344, 'KDE': 0.012609686392283898, 'eta': 0.7957916892534629, 'gamma_p': 5.360502625576902, 'gamma_q': 18.254004359130974, 'k_pq': 8.14782487806399e-06, 'lambda_p': 0.0060442423987455435}
 plot_simple_results(pred,"asymilacja/trening/okres.csv")
 
 plot_gt("asymilacja/trening/okres.csv")

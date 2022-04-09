@@ -1,18 +1,12 @@
-import math
 import pyabc
 
-import numpy as np
 from scipy.integrate import odeint
-import scipy.stats as st
 import tempfile
 import os
-import pandas as pd
-import matplotlib.pyplot as plt
 # %matplotlib inline
-from asymilacja.model.datasets import ribba_dataset
 
 # pyabc.settings.set_figure_params('pyabc')  # for beautified plots
-from asymilacja.model.CancerModelClass import CancerModel
+from asymilacja.model.Cancer1Ribba import CancerModel
 
 import numpy as np
 import pandas as pd
