@@ -28,7 +28,6 @@ class CancerModel:
         k_pq =self.k_pq  # the rate constant for transition from proliferation to quiescence. Tumor specific
         K = self.K
 
-
         dCdt = -KDE * C
         dPdt = lambda_p * P*(1 - (P + Q + Q_p)/K) + k_qpp * Q_p - k_pq * P - gamma_p * C * KDE * P
         dQdt = k_pq * P - gamma_q * C * KDE * Q
