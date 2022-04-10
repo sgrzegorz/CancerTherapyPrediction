@@ -1,3 +1,4 @@
+import numpy as np
 import pyabc
 
 from scipy.integrate import odeint
@@ -6,37 +7,50 @@ import os
 import matplotlib.pyplot as plt
 # %matplotlib inline
 from asymilacja.utlis.datasets import ribba_dataset
-
+from asymilacja.utlis.curement import curement_function
 # pyabc.settings.set_figure_params('pyabc')  # for beautified plots
 from asymilacja.model.Cancer1Ribba import CancerModel
+from numpy.polynomial import Chebyshev
 
-# data = pd.read_csv('../data/Zakazenia30323112020.csv', sep=';', encoding='windows-1250')
-# data2 = data.copy()
-# data2["Date_reported"] = dt.strptime(data["Data"][0], "%d.%m.%Y").date()
-# for i in range(data["Data"].size):
-#     data2["Date_reported"][i] = dt.strptime(data["Data"][i], "%d.%m.%Y").date()
-# data_filtered = data2[(data2["Date_reported"]>=dt(2020, 9, 16).date()) & (data2["Date_reported"]<=dt(2020, 10, 31).date())]
 
-#
+df = ribba_dataset('data/ribba/fig4.csv')
+df = df[df["t"]>0]
+threatment_start = 0
+threatment_end = 26
+df['curement'] = [curement_function(i,threatment_start,threatment_end) for i in df.t.tolist()]
 
-patient = ribba_dataset('data/ribba/fig4.csv')
-patient = patient[patient["t"]>0]
+start = df.t.tolist()[0]
+end = df.t.tolist()[-1]
+t = np.arange(start,end)
+# plt.plot(df)
+# plt.show()
+fit = Chebyshev.fit(df.t.tolist(), df.mtd.tolist(), deg=6)
+mtd = [fit(i) for i in t]
+curement = [curement_function(i,threatment_start,threatment_end) for i in t]
 
-plt.scatter(patient.t,patient.mtd)
-plt.xlabel("time [months]")
-plt.ylabel("mtd [mm]")
 
-P = 0.1 *patient.mtd[0]
-Q = patient.mtd[0] - P
-Q_p = 0.0
-C = 0.0
-observation = {"t" : patient["t"].tolist(), "mtd" : patient["mtd"].tolist()}
 
-count = len(observation["t"])
 
+# plt.scatter(t,mtd)
+# plt.xlabel("time [months]")
+# plt.ylabel("mtd [mm]")
+# plt.show()
+# plt.plot(df.t,df['curement'])
+# plt.show()
+
+
+P0 = 0.1 *mtd[0]
+Q0 = mtd[0] - P0
+Q_p0 = 0.0
+C0 = curement[0]
+observation = np.array([ mtd,curement ])
+
+count = len(t)
+
+X0 = [P0, Q0, Q_p0, C0]
 
 def model(parameters):
-    X0 = [parameters["P"], parameters["Q"], parameters["Q_p"], parameters["C"]]
+    # X0 = [parameters["P"], parameters["Q"], parameters["Q_p"], parameters["C"]]
 
     lambda_p = parameters["lambda_p"]
     delta_qp = parameters["delta_qp"]
@@ -49,7 +63,7 @@ def model(parameters):
 
 
     m1 = CancerModel(lambda_p, delta_qp, gamma_q, gamma_p, KDE, k_qpp, k_pq, K)
-    t = m1.time_interval(0,200)
+    # t = m1.time_interval(0,200)
 
     x = odeint(m1.model, X0, t)
 
@@ -58,25 +72,44 @@ def model(parameters):
     Q_p = x[:, 2]
     C = x[:, 3]
 
-    return {"P" : P, "Q" : Q, "Q_p" : Q_p,"C": C}
+    return {"data" :np.array([ P+Q+Q_p,C],dtype=float)}
 
 
-def distance(x, y):
+def distance1(x, y):
     dif = 0
     for i in range(count):
-        dif += abs(x["data"][i] - y["data"][i])
+        dif += abs(x["data"][0][i] - y["data"][0][i])
     return dif
 
+def distance2(x, y):
+    return np.absolute(x["data"][1]- y["data"][1]).sum()
 
-prior = pyabc.Distribution(lambda_p=pyabc.RV("uniform", 1, 20), delta_qp=pyabc.RV("uniform", 1.00e-8, 3.00e-8), gamma_q=pyabc.RV("uniform", 1.0e-7, 3.0e-7), gamma_p=pyabc.RV("uniform", 0.1, 1), KDE=pyabc.RV("uniform", 0.01, 0.5), k_qpp=pyabc.RV("uniform", 0.01, 0.5),
-                           k_pq=pyabc.RV("uniform", 0.1, 0.7), K=pyabc.RV("uniform", 0.01, 0.5))
+dist = pyabc.distance.AggregatedDistance([distance1,distance2])
+prior = pyabc.Distribution(lambda_p=pyabc.RV("uniform", 1, 20), delta_qp=pyabc.RV("uniform",0, 20), gamma_q=pyabc.RV("uniform", 0, 20), gamma_p=pyabc.RV("uniform", 0.1, 20), KDE=pyabc.RV("uniform", 0.01, 20), k_qpp=pyabc.RV("uniform", 0.01, 20),
+                           k_pq=pyabc.RV("uniform", 0.1, 20), K=pyabc.RV("uniform", 0.0, 200))
 
-abc = pyabc.ABCSMC(model, prior, distance, population_size=4)
+abc = pyabc.ABCSMC(model, prior, dist, population_size=100)
 
 db_path = ("sqlite:///" +  os.path.join(tempfile.gettempdir(), "test.db"))
 
 abc.new(db_path, {"data": observation})
 
-history = abc.run(minimum_epsilon=100, max_nr_populations=4)
+history = abc.run(minimum_epsilon=100, max_nr_populations=100)
 
 history is abc.history
+
+posterior2 = pyabc.MultivariateNormalTransition()
+posterior2.fit(*history.get_distribution(m=0))
+
+t_params = posterior2.rvs()
+
+print(t_params)
+
+data = model(t_params)["data"]
+mtd = data[0,:]
+# t = data[0,:]
+
+plt.title("out")
+plt.plot(t,mtd)
+plt.show()
+
