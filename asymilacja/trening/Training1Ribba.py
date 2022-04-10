@@ -86,7 +86,7 @@ def distance2(x, y):
 
 dist = pyabc.distance.AggregatedDistance([distance1,distance2])
 prior = pyabc.Distribution(lambda_p=pyabc.RV("uniform", 1, 20), delta_qp=pyabc.RV("uniform",0, 20), gamma_q=pyabc.RV("uniform", 0, 20), gamma_p=pyabc.RV("uniform", 0.1, 20), KDE=pyabc.RV("uniform", 0.01, 20), k_qpp=pyabc.RV("uniform", 0.01, 20),
-                           k_pq=pyabc.RV("uniform", 0.1, 20), K=pyabc.RV("uniform", 0.0, 200))
+                           k_pq=pyabc.RV("uniform", 0.1, 20), K=pyabc.RV("uniform", 50.0, 200))
 
 abc = pyabc.ABCSMC(model, prior, dist, population_size=100)
 
