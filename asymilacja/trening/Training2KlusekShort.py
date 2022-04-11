@@ -11,7 +11,7 @@ import pandas as pd
 from asymilacja.model.Cancer2KlusekShort import CancerModel
 from asymilacja.paramteres.Vis2KlusekShort import plot_simple_results
 
-df = pd.read_csv("data/klusek/gen/okres.csv")
+df = pd.read_csv("data/klusek/out/okres.csv")
 
 count = len(df["t"])
 
@@ -134,7 +134,7 @@ for key, val in t_params:
 plot_simple_results(t_params1,"data/klusek/2dawki.txt")
 
 
-
+# {'K': 222.26912030083898, 'KDE': 0.0022379173337168695, 'eta': 0.9398272992772523, 'gamma_p': 10.704809708433405, 'gamma_q': 19.758732923512987, 'k_pq': 1.6247407229958707e-05, 'lambda_p': 4.4135534550830785e-11}
 
 # t_params = np.array([[param, t_params[param]] for param in t_params])
 

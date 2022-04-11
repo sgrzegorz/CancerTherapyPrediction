@@ -28,8 +28,10 @@ def curement_function(x,x1,x2):
 df['curement'] = [curement_function(x,58.33333,169.16667) for x in df.t]
 df1 = df.copy()
 df = df[(df.t > t[0])  &  (df.t < t[1])]
+# df = df[(df.t <= t[0])]
 
-df.to_csv("data/klusek/gen/okres.csv")
+
+df.to_csv("data/klusek/out/2dawki_p2.csv")
 
 # df = pd.read_csv("asymilacja/trening/okres.csv")
 # df1 = pd.DataFrame()
