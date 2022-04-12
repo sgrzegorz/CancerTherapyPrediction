@@ -15,7 +15,7 @@ class CancerModel:
         self.eta = eta
 
     def model(self, X, t):
-        [P,Q,C] = X
+        [P,N,C] = X
 
         lambda_p = self.lambda_p # the rate constant of growth used in the logistic expression for the expansion of proliferative tissue. Tumor specific
         gamma_q = self.gamma_q  # damages in quiescent tissue. Treatment specific
@@ -26,9 +26,9 @@ class CancerModel:
         eta = self.eta  # stopień żeby minimalna zawartosc lekarstwa nie wplywala na komorki
 
         dCdt = -KDE * C
-        dPdt = lambda_p * P*(1 - (P + Q)/K)  - k_pq * P - gamma_p * f(C,eta) * KDE * P
-        dQdt = k_pq * P - gamma_q * f(C,eta) * KDE* Q
-        return [dPdt, dQdt,dCdt]
+        dPdt = lambda_p * P*(1 - (P + N)/K)  - k_pq * P - gamma_p * f(C,eta) * KDE * P
+        dNdt = k_pq * P - gamma_q * f(C,eta) * KDE* N
+        return [dPdt, dNdt,dCdt]
 
     def time_interval(self, start,end):
         return np.linspace(start,end,np.abs(start-end)+1)
