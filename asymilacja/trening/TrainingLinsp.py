@@ -6,11 +6,17 @@ from lmfit import minimize, Parameters, Parameter, report_fit
 from scipy.integrate import odeint
 
 
+def unit_step_fun(x, threshold):
+    if x >= threshold:
+        return x
+    else:
+        return 0
+
 def f(y, t, paras):
     """
     Your system of differential equations
     """
-    [P, N, C] = y
+    [P, C] = y
     try:
         lambda_p = paras['lambda_p'].value
         gamma_q = paras['gamma_q'].value
@@ -23,9 +29,10 @@ def f(y, t, paras):
         lambda_p, gamma_q,gamma_p,KDE,k_pq,K,eta = paras
 
     dCdt = -KDE * C
-    dPdt = lambda_p * P  - k_pq * P - gamma_p * C * KDE * P
-    dNdt = k_pq * P - gamma_q * C * KDE * N
-    return [dPdt, dNdt, dCdt]
+    # dPdt = lambda_p * P*(1-P/K) - k_pq * P - gamma_p * unit_step_fun(C,eta) * KDE * P
+    dPdt = lambda_p * P*(1-P/K) - k_pq * P - gamma_p * C * KDE * P
+
+    return [dPdt, dCdt]
 
 
 def g(t, x0, paras):
@@ -37,69 +44,67 @@ def g(t, x0, paras):
 
 
 def residual(ps, ts, data):
-    x0 = ps['P'].value, ps['N'].value, ps['C'].value
+    x0 = ps['P0'].value,  ps['C0'].value
     model = g(ts, x0, ps)
     return (model - data).ravel()
 
 
-df = pd.read_csv("data/klusek/out/okres.csv")
-P_true = list(df.prolif_cells)
-N_true = list(df.dead_cells)
-C_true = list(df.curement)
-t_true = np.arange(0,len(df.t))
+df_true = pd.read_csv("data/klusek/out/okres.csv")
+threatment_end = df_true['prolif_cells'].idxmin()
 
-plt.scatter(t_true, P_true,color='red', label='P truth')
-plt.scatter(t_true, N_true, color='green', label='N truth')
-plt.scatter(t_true, C_true, color='yellow', label='C truth')
+# fix curement function
+from asymilacja.utlis.curement1 import curement_function
+df_true.curement = [curement_function(i,0,threatment_end) for i in list(df_true.index)]
+
+
+P_true = list(df_true.prolif_cells)
+N_true = list(df_true.dead_cells)
+C_true = list(df_true.curement)
+t_true = list(df_true.index)
+
+fig, (plt1,plt2) = plt.subplots(2,1)
+
+plt1.scatter(t_true, P_true,color='red', label='P truth')
+# plt.scatter(t_true, N_true, color='green', label='N truth')
+plt2.scatter(t_true, C_true, color='yellow', label='C truth')
 # df.loc[df['prolif_cells'].idxmin()]['iteration']
-threatment_end = df['prolif_cells'].idxmin()
 
-df = df[df.index < threatment_end]
-df = df[df.index % 5 == 0]
+
+
+df = df_true[df_true.index < threatment_end]
+# df = df[df.index % 5 == 0]
 P = list(df.prolif_cells)
 N = list(df.dead_cells)
 C = list(df.curement)
-t = np.arange(0,len(df.t))
-
-plt.scatter(t, P,color='blue', label='P taken')
-plt.scatter(t, N, color='blue', label='N taken')
-plt.scatter(t, C, color='blue', label='C taken')
+t = list(df.index)
 
 
 
-# df = df.sample(n=40, random_state=1).sort_values(by=['iteration'])
-# df = df[df.index % 10 == 0]
-# df = df[df.t < 5]
 
-P = list(df.prolif_cells)
-N = list(df.dead_cells)
-C = list(df.curement)
 
+plt1.scatter(t, P,color='blue', label='P taken')
+# plt.scatter(t, N, color='blue', label='N taken')
+plt2.scatter(t, C, color='blue', label='C taken')
 
 # initial conditions
-y0 = [P[0], N[0], C[0]]
+y0 = [P[0], C[0]]
 
 
 
 # measured data
-t_measured = np.linspace(0, 9, 10)
-x2_measured = np.array([P,N,C]).T
-
-# plt.figure()
-# plt.scatter(t_measured, x2_measured, marker='o', color='b', label='measured data', s=75)
+x2_measured = np.array([P,C]).T
 
 # set parameters including bounds; you can also fix parameters (use vary=False)
 params = Parameters()
-params.add('P', value=y0[0], vary=False)
-params.add('N', value=y0[1], vary=False)
-params.add('C', value=y0[2], vary=False)
-params.add('lambda_p', value=0.2, min=0.0001, max=1.)
+params.add('P0', value=y0[0], vary=False)
+params.add('C0', value=y0[1], vary=False)
+params.add('lambda_p', value=0.2, min=0.01, max=1.)
 params.add('gamma_q', value=0.3, min=0.0001, max=1.)
 params.add('gamma_p', value=0.3, min=0.0001, max=1.)
-params.add('KDE', value=0.3, min=0.0001, max=1.)
+params.add('KDE', value=0.3, min=0.05, max=0.3)
 params.add('k_pq', value=0.3, min=0.0001, max=1.)
-params.add('K', value=0.3, min=0.0001, max=1.)
-params.add('eta', value=0.3, min=0.0001, max=1.)
+params.add('K', value=0.3, min=0.0001, max=2.e6)
+params.add('eta', value=0.3, min=0.0001, max=0.4)
 
 # fit model
 result = minimize(residual, params, args=(t, x2_measured), method='leastsq')  # leastsq nelder
@@ -108,9 +113,8 @@ data_fitted = g(t_true, y0, result.params)
 
 
 # plot fitted data
-plt.plot(t_true, data_fitted[:, 0], '-', linewidth=2, color='red', label='fitted data')
-plt.plot(t_true, data_fitted[:, 1], '-', linewidth=2, color='green', label='fitted data')
-plt.plot(t_true, data_fitted[:, 2], '-', linewidth=2, color='yellow', label='fitted data')
+plt1.plot(t_true, data_fitted[:, 0], '-', linewidth=2, color='red', label='fitted data')
+plt2.plot(t_true, data_fitted[:, 1], '-', linewidth=2, color='yellow', label='fitted data')
 
 plt.legend()
 # plt.xlim([0, max(t)])
