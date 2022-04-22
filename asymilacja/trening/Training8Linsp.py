@@ -10,7 +10,7 @@ def unit_step_fun(x, threshold):
     if x >= threshold:
         return x
     else:
-        return 0
+        return 0.0
 
 def f(y, t, paras):
     """
@@ -19,18 +19,19 @@ def f(y, t, paras):
     [P, C] = y
     try:
         lambda_p = paras['lambda_p'].value
-        gamma_q = paras['gamma_q'].value
         gamma_p = paras['gamma_p'].value
         KDE = paras['KDE'].value
-        k_pq = paras['k_pq'].value
         K = paras['K'].value
         eta = paras['eta'].value
     except KeyError:
-        lambda_p, gamma_q,gamma_p,KDE,k_pq,K,eta = paras
+        # lambda_p, gamma_q,gamma_p,KDE,k_pq,K,eta = paras
+        lambda_p, gamma_p,KDE,K,eta = paras
+
 
     dCdt = -KDE * C
-    # dPdt = lambda_p * P*(1-P/K) - k_pq * P - gamma_p * unit_step_fun(C,eta) * KDE * P
-    dPdt = lambda_p * P*(1-P/K) - k_pq * P - gamma_p * C * KDE * P
+
+    dPdt = lambda_p * P*(1-P/K) - gamma_p * unit_step_fun(C,eta) * KDE * P
+    # dPdt = lambda_p * P*(1-P/K) - k_pq * P - gamma_p * C * KDE * P
 
     return [dPdt, dCdt]
 
@@ -98,13 +99,11 @@ x2_measured = np.array([P,C]).T
 params = Parameters()
 params.add('P0', value=y0[0], vary=False)
 params.add('C0', value=y0[1], vary=False)
-params.add('lambda_p', value=0.2, min=0.01, max=1.)
-params.add('gamma_q', value=0.3, min=0.0001, max=1.)
+params.add('lambda_p', value=0.5, min=0.01, max=0.3)
 params.add('gamma_p', value=0.3, min=0.0001, max=1.)
-params.add('KDE', value=0.3, min=0.05, max=0.3)
-params.add('k_pq', value=0.3, min=0.0001, max=1.)
-params.add('K', value=0.3, min=0.0001, max=2.e6)
-params.add('eta', value=0.3, min=0.0001, max=0.4)
+params.add('KDE', value=0.03, min=0.01, max=0.2)
+params.add('K', value=1.9e6, min=1.8e6, max=2.e6)
+params.add('eta', value=0.05, min=0.0001, max=0.4)
 
 # fit model
 result = minimize(residual, params, args=(t, x2_measured), method='leastsq')  # leastsq nelder
@@ -115,6 +114,7 @@ data_fitted = g(t_true, y0, result.params)
 # plot fitted data
 plt1.plot(t_true, data_fitted[:, 0], '-', linewidth=2, color='red', label='fitted data')
 plt2.plot(t_true, data_fitted[:, 1], '-', linewidth=2, color='yellow', label='fitted data')
+plt2.plot(t_true, np.repeat(result.params['eta'].value,len(t_true)), '--', linewidth=1, color='black', label='eta')
 
 plt.legend()
 # plt.xlim([0, max(t)])
