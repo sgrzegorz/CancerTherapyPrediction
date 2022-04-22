@@ -5,12 +5,14 @@ from scipy.integrate import odeint
 from lmfit import minimize, Parameters, Parameter, report_fit
 from scipy.integrate import odeint
 
+def unit_step_fun(x,threshold):
+    return x*(1 / 2 + 1 / 2 *np.tanh(100 * (x-threshold)))
 
-def unit_step_fun(x, threshold):
-    if x >= threshold:
-        return x
-    else:
-        return 0.0
+# def unit_step_fun(x, threshold):
+#     if x >= threshold:
+#         return x
+#     else:
+#         return 0.0
 
 def f(y, t, paras):
     """
@@ -64,10 +66,12 @@ C_true = list(df_true.curement)
 t_true = list(df_true.index)
 
 fig, (plt1,plt2) = plt.subplots(2,1)
+fig.tight_layout(pad=4.0)
 
-plt1.scatter(t_true, P_true,color='red', label='P truth')
+
+plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 # plt.scatter(t_true, N_true, color='green', label='N truth')
-plt2.scatter(t_true, C_true, color='yellow', label='C truth')
+plt2.plot(t_true, C_true, color='black', linewidth=1, label='Funkcja liniowa')
 # df.loc[df['prolif_cells'].idxmin()]['iteration']
 
 
@@ -83,10 +87,11 @@ t = list(df.index)
 
 
 
-plt1.scatter(t, P,color='blue', label='P taken')
+plt1.scatter(t, P,color='yellow', label='przedział uczenia')
+plt1.set_title("Rys1 Komórki proliferatywne")
 # plt.scatter(t, N, color='blue', label='N taken')
-plt2.scatter(t, C, color='blue', label='C taken')
-
+plt2.scatter(t, C, color='yellow', label='przedział uczenia')
+plt2.set_title("Rys2 Lekarstwo")
 # initial conditions
 y0 = [P[0], C[0]]
 
@@ -103,7 +108,7 @@ params.add('lambda_p', value=0.5, min=0.01, max=0.3)
 params.add('gamma_p', value=0.3, min=0.0001, max=1.)
 params.add('KDE', value=0.03, min=0.01, max=0.2)
 params.add('K', value=1.9e6, min=1.8e6, max=2.e6)
-params.add('eta', value=0.05, min=0.0001, max=0.4)
+params.add('eta', value=0.2, min=0.1, max=0.4)
 
 # fit model
 result = minimize(residual, params, args=(t, x2_measured), method='leastsq')  # leastsq nelder
@@ -112,11 +117,16 @@ data_fitted = g(t_true, y0, result.params)
 
 
 # plot fitted data
-plt1.plot(t_true, data_fitted[:, 0], '-', linewidth=2, color='red', label='fitted data')
-plt2.plot(t_true, data_fitted[:, 1], '-', linewidth=2, color='yellow', label='fitted data')
-plt2.plot(t_true, np.repeat(result.params['eta'].value,len(t_true)), '--', linewidth=1, color='black', label='eta')
+plt1.plot(t_true, data_fitted[:, 0], '-', linewidth=1, color='green', label='model uproszczony ')
+plt1.set_ylabel("cells count")
+plt1.set_xlabel("time")
+plt2.plot(t_true, data_fitted[:, 1], '-', linewidth=1, color='green', label='model uproszczony')
+plt2.plot(t_true, np.repeat(result.params['eta'].value,len(t_true)), '--', linewidth=1, color='blue', label='threshold')
+plt2.set_xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa \n2)Poziom lekarstwa w modelu Adriana symuluję funkcją liniową")
 
-plt.legend()
+plt1.legend()
+plt2.legend()
+
 # plt.xlim([0, max(t)])
 # plt.ylim([0, 1.1 * max(data_fitted[:, 1])])
 # display fitted statistics
