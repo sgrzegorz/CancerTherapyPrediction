@@ -21,13 +21,14 @@ def f(y, t, paras):
         KDE = paras['KDE'].value
         K = paras['K'].value
         eta = paras['eta'].value
+
     except KeyError:
         # lambda_p, gamma_q,gamma_p,KDE,k_pq,K,eta = paras
         lambda_p, gamma_p,KDE,K,eta = paras
 
 
-    dCdt = -KDE * C
-    dPdt = lambda_p * P*(1-P/K) - gamma_p * unit_step_fun(C,eta)  * P
+    dCdt =-KDE * C
+    dPdt = lambda_p * P*(1-P/K) - (gamma_p * unit_step_fun(C,eta)  * P)
     # dPdt = lambda_p * P*(1-P/K) - k_pq * P - gamma_p * C * KDE * P
     return [dPdt, dCdt]
 
@@ -67,9 +68,17 @@ plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 
 
 
+# warunek = []
+# for i in list(df_true.index):
+#     if i < threatment_end:
+#         warunek.append(i % 3==0)
+#     else:
+#         warunek.append(i % 40==0)
+# df = df_true[warunek]
+
 # df = df_true[df_true.index < threatment_end]
-# df = df[df.index % 5 == 0]
 df = df_true
+# df = df[df.index % 4 == 0]
 P = list(df.prolif_cells)
 N = list(df.dead_cells)
 C = list(df.curement)
@@ -96,9 +105,9 @@ params.add('P0', value=y0[0], vary=False)
 params.add('C0', value=1.0, min=0.01, max=10)
 params.add('lambda_p', value=0.5, min=0.01, max=0.3)
 params.add('gamma_p', value=0.3, min=0.0001, max=5.)
-params.add('KDE', value=0.03, min=0.1, max=0.9)
+params.add('KDE', value=0.01, min=0.001, max=0.2)
 params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
-params.add('eta', value=0.2, min=0.1, max=0.4)
+params.add('eta', value=0.2, min=0.1, max=0.7)
 
 # fit model
 result = minimize(residual, params, args=(t, x2_measured), method='leastsq')  # leastsq nelder
