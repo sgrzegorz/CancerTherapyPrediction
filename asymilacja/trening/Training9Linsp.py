@@ -19,11 +19,14 @@ def f(y, t, paras):
         lambda_p = paras['lambda_p'].value
         gamma_p = paras['gamma_p'].value
         KDE = paras['KDE'].value
+        KDE = KDE*paras['C0'].value
+
         K = paras['K'].value
         eta = paras['eta'].value
-
+        eta = eta*paras['C0'].value
     except KeyError:
         # lambda_p, gamma_q,gamma_p,KDE,k_pq,K,eta = paras
+        print("Key error inna inicjalizacja")
         lambda_p, gamma_p,KDE,K,eta = paras
 
 
@@ -68,6 +71,7 @@ plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 
 
 
+
 # warunek = []
 # for i in list(df_true.index):
 #     if i < threatment_end:
@@ -79,7 +83,12 @@ plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 # df = df_true[df_true.index < threatment_end]
 df = df_true
 # df = df[df.index % 4 == 0]
+
+# noise = np.random.normal(0, .1, df.shape[0]) *0.05* np.max(df.prolif_cells)
+# P = list(df.prolif_cells+noise)
 P = list(df.prolif_cells)
+
+
 N = list(df.dead_cells)
 C = list(df.curement)
 t = list(df.index)
@@ -91,7 +100,7 @@ t = list(df.index)
 plt1.scatter(t, P,color='yellow', label='przedział uczenia')
 plt1.set_title("Rys1 Komórki proliferatywne")
 # plt.scatter(t, N, color='blue', label='N taken')
-plt2.scatter(t, C, color='yellow', label='przedział uczenia')
+plt2.scatter(t, np.repeat(0,len(t)), color='yellow', label='przedział uczenia')
 plt2.set_title("Rys2 Lekarstwo")
 # initial conditions
 y0 = [P[0], C[0]]
@@ -102,16 +111,17 @@ x2_measured = np.array([P]).T
 # set parameters including bounds; you can also fix parameters (use vary=False)
 params = Parameters()
 params.add('P0', value=y0[0], vary=False)
-params.add('C0', value=1.0, min=0.01, max=10)
+params.add('C0', value=1.0, min=0.3, max=10)
 params.add('lambda_p', value=0.5, min=0.01, max=0.3)
 params.add('gamma_p', value=0.3, min=0.0001, max=5.)
-params.add('KDE', value=0.01, min=0.001, max=0.2)
+params.add('KDE', value=0.07, min=0.05, max=0.20) #uwaga KDE jest modyfikowana w f,
 params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
-params.add('eta', value=0.2, min=0.1, max=0.7)
+# params.add('eta', expr='0.2*C0')
+params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 
 # fit model
 result = minimize(residual, params, args=(t, x2_measured), method='leastsq')  # leastsq nelder
-data_fitted = g(t_true, y0, result.params)
+data_fitted = g(t_true, [P[0], result.params['C0'].value], result.params)
 
 
 # plot fitted data
@@ -120,12 +130,16 @@ plt1.set_ylabel("cells count")
 plt1.set_xlabel("time")
 plt2.plot(t_true, data_fitted[:, 1], '-', linewidth=1, color='green', label='model uproszczony')
 plt2.plot(t_true, np.repeat(result.params['eta'].value,len(t_true)), '--', linewidth=1, color='blue', label='threshold')
-plt2.set_xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa \n2)Poziom lekarstwa w modelu Adriana symuluję funkcją liniową")
+plt2.set_xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa")
+
+t_1 = np.arange(0,len(data_fitted[:, 1]))
+plt2.plot(t_1,[unit_step_fun(x,result.params['eta'].value) for x in data_fitted[:, 1]],'--',linewidth=1,color='brown',label="efektywność lekarstwa")
 
 plt1.legend()
 plt2.legend()
 
 # display fitted statistics
 report_fit(result)
+
 
 plt.show()
