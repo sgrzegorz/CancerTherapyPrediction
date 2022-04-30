@@ -5,6 +5,9 @@ from scipy.integrate import odeint
 from lmfit import minimize, Parameters, Parameter, report_fit
 from scipy.integrate import odeint
 
+from asymilacja.utlis.preprocessAndNormalize import NormalizeData
+
+
 def unit_step_fun(x,threshold):
     return x*(1 / 2 + 1 / 2 *np.tanh(100 * (x-threshold)))
 
@@ -17,6 +20,8 @@ def f(y, t, paras):
     [P, C] = y
     try:
         lambda_p = paras['lambda_p'].value
+        psi_p = paras['psi_p'].value
+
         gamma_p = paras['gamma_p'].value
         KDE = paras['KDE'].value
         KDE = KDE*paras['C0'].value
@@ -31,7 +36,7 @@ def f(y, t, paras):
 
 
     dCdt =-KDE * C
-    dPdt = lambda_p * P*(1-P/K) - (gamma_p * unit_step_fun(C,eta)  * P)
+    dPdt = lambda_p * P*(1-P/K) - psi_p*P - gamma_p * unit_step_fun(C,eta)  * P
     # dPdt = lambda_p * P*(1-P/K) - k_pq * P - gamma_p * C * KDE * P
     return [dPdt, dCdt]
 
@@ -57,6 +62,8 @@ threatment_end = df_true['prolif_cells'].idxmin()
 from asymilacja.utlis.curement1 import curement_function
 df_true.curement = [curement_function(i,0,threatment_end) for i in list(df_true.index)]
 
+# normalize prolif cells
+# df_true.prolif_cells = NormalizeData(list(df_true.prolif_cells))*50
 
 P_true = list(df_true.prolif_cells)
 N_true = list(df_true.dead_cells)
@@ -65,11 +72,7 @@ t_true = list(df_true.index)
 
 fig, (plt1,plt2) = plt.subplots(2,1)
 fig.tight_layout(pad=4.0)
-
-
 plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
-
-
 
 
 # warunek = []
@@ -111,10 +114,11 @@ x2_measured = np.array([P]).T
 # set parameters including bounds; you can also fix parameters (use vary=False)
 params = Parameters()
 params.add('P0', value=y0[0], vary=False)
-params.add('C0', value=1.0, min=0.3, max=10)
+params.add('C0', value=3.0, min=0.3, max=7)
 params.add('lambda_p', value=0.5, min=0.01, max=0.3)
-params.add('gamma_p', value=0.3, min=0.0001, max=5.)
-params.add('KDE', value=0.07, min=0.05, max=0.20) #uwaga KDE jest modyfikowana w f,
+params.add('psi_p', value=0.5, min=0.01, max=0.3)
+params.add('gamma_p', value=0.3, min=0.0001, max=1.)
+params.add('KDE', value=0.07, min=0.05, max=0.07) #uwaga KDE jest modyfikowana w f,
 params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
 # params.add('eta', expr='0.2*C0')
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
