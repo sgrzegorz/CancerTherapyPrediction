@@ -74,6 +74,8 @@ fig, (plt1,plt2) = plt.subplots(2,1)
 fig.tight_layout(pad=4.0)
 plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 
+df = df_true
+# df = df_true[df_true.index < 6/6*threatment_end]
 
 # warunek = []
 # for i in list(df_true.index):
@@ -83,8 +85,7 @@ plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 #         warunek.append(i % 40==0)
 # df = df_true[warunek]
 
-# df = df_true[df_true.index < threatment_end]
-df = df_true
+
 # df = df[df.index % 4 == 0]
 
 # noise = np.random.normal(0, .1, df.shape[0]) *0.05* np.max(df.prolif_cells)
@@ -114,30 +115,34 @@ x2_measured = np.array([P]).T
 # set parameters including bounds; you can also fix parameters (use vary=False)
 params = Parameters()
 params.add('P0', value=y0[0], vary=False)
-params.add('C0', value=3.0, min=0.3, max=7)
-params.add('lambda_p', value=0.5, min=0.01, max=0.3)
-params.add('psi_p', value=0.5, min=0.01, max=0.3)
-params.add('gamma_p', value=0.3, min=0.0001, max=1.)
+params.add('C0', min=0.3, max=7)
+params.add('gamma_p',value=0.3, min=0.0001, max=1.)
 params.add('KDE', value=0.07, min=0.05, max=0.07) #uwaga KDE jest modyfikowana w f,
 params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
 # params.add('eta', expr='0.2*C0')
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 
+# psi_p < lambda_p
+params.add('psi_p', min=0.05, max=0.2)
+params.add('lambda_p_m', min=0.05, max=0.2)
+params.add('lambda_p', expr='lambda_p_m + psi_p')
+
+
 # fit model
-result = minimize(residual, params, args=(t, x2_measured), method='leastsq')  # leastsq nelder
+result = minimize(residual, params, args=(t, x2_measured), method='least_squares')  # leastsq nelder
 data_fitted = g(t_true, [P[0], result.params['C0'].value], result.params)
 
-
+params_eta =result.params['eta'].value*result.params['C0'].value
 # plot fitted data
 plt1.plot(t_true, data_fitted[:, 0], '-', linewidth=1, color='green', label='model uproszczony ')
 plt1.set_ylabel("cells count")
 plt1.set_xlabel("time")
 plt2.plot(t_true, data_fitted[:, 1], '-', linewidth=1, color='green', label='model uproszczony')
-plt2.plot(t_true, np.repeat(result.params['eta'].value,len(t_true)), '--', linewidth=1, color='blue', label='threshold')
+plt2.plot(t_true, np.repeat(params_eta,len(t_true)), '--', linewidth=1, color='blue', label='threshold')
 plt2.set_xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa")
 
 t_1 = np.arange(0,len(data_fitted[:, 1]))
-plt2.plot(t_1,[unit_step_fun(x,result.params['eta'].value) for x in data_fitted[:, 1]],'--',linewidth=1,color='brown',label="efektywność lekarstwa")
+plt2.plot(t_1,[unit_step_fun(x,params_eta) for x in data_fitted[:, 1]],'--',linewidth=1,color='brown',label="efektywność lekarstwa")
 
 plt1.legend()
 plt2.legend()
