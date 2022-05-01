@@ -97,10 +97,6 @@ N = list(df.dead_cells)
 C = list(df.curement)
 t = list(df.index)
 
-
-
-
-
 plt1.scatter(t, P,color='yellow', label='przedział uczenia')
 plt1.set_title("Rys1 Komórki proliferatywne")
 # plt.scatter(t, N, color='blue', label='N taken')
@@ -152,3 +148,5 @@ report_fit(result)
 
 
 plt.show()
+
+print(result.params.valuesdict())
