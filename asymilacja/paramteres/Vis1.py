@@ -28,7 +28,7 @@ def plot_results(pred):
  # p1.set(xlim=(0, list(df.t)[-1]))
  # p2.set(xlim=(0, list(df.t)[-1]))
 
- df = pd.read_csv("data/klusek/calosc.csv")
+ df = pd.read_csv("data/klusek/patient4/calosc.csv")
 
  t = list(df.t)
 

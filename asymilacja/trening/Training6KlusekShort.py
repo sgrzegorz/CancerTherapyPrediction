@@ -8,8 +8,15 @@ import pandas as pd
 from asymilacja.model.Cancer5KlusekShort import CancerModel
 from asymilacja.paramteres.Vis2KlusekShort import plot_simple_results, plot_gt
 
-df = pd.read_csv("data/klusek/out/okres.csv")
-plot_gt("data/klusek/out/okres.csv")
+df = pd.read_csv("data/klusek/patient4/okres.csv")
+plot_gt("data/klusek/patient4/okres.csv")
+df = df[df.index % 20 == 0]
+# df = df[df.index <df.shape[0]/10]
+# df = df[df.index <3*df.shape[0]/10]
+# df = df[df.index <5*df.shape[0]/10]
+# df = df[df.index <6*df.shape[0]/10]
+
+
 
 P = list(df.prolif_cells)
 N = list(df.dead_cells)
@@ -95,11 +102,11 @@ for i in range(50):
     solP = data[0, :]
     solN = data[1, :]
     solC = data[2, :]
-    plt.plot(t, C, label='C')
+    plt.plot(t, solC, label='C')
     plt.title('Assimilated Curement')
     plt.show()
-    plt.plot(t, P, label='P')
-    plt.plot(t, N, label='N')
+    plt.scatter(t, solP, label='P')
+    plt.scatter(t, solN, label='N')
     plt.title("Assimilated data")
     plt.legend()
     plt.show()

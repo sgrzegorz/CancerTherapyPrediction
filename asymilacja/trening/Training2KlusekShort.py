@@ -12,7 +12,7 @@ import pandas as pd
 from asymilacja.model.Cancer2KlusekShort import CancerModel
 from asymilacja.paramteres.Vis2KlusekShort import plot_simple_results
 
-df = pd.read_csv("data/klusek/out/okres.csv")
+df = pd.read_csv("data/klusek/patient4/okres.csv")
 
 count = len(df["t"])
 

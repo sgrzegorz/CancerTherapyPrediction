@@ -26,52 +26,53 @@ from asymilacja.model.Cancer2KlusekShort import CancerModel
 
 
 def plot_gt(path):
- df = pd.read_csv(path)
- figure, axis = plt.subplots(2, 1)
- p1 = axis[0]
- p2 = axis[1]
+    df = pd.read_csv(path)
+    figure, axis = plt.subplots(2, 1)
+    p1 = axis[0]
+    p2 = axis[1]
 
- p1.plot(df.t, df.prolif_cells, 'g', label="P")
- p1.plot(df.t, df.dead_cells, 'b', label="Q")
- p1.legend()
+    p1.plot(df.t, df.prolif_cells, 'g', label="P")
+    p1.plot(df.t, df.dead_cells, 'b', label="Q")
+    p1.legend()
 
- p2.plot(df.t, df.curement, 'y', label="P")
- plt.show()
+    p2.plot(df.t, df.curement, 'y', label="P")
+    plt.show()
 
 
-def plot_simple_results(pred,origin_path):
+def plot_simple_results(pred, origin_path):
+    K = pred['K']
+    KDE = pred['KDE']
+    eta = pred['eta']
+    gamma_p = pred['gamma_p']
+    gamma_q = pred['gamma_q']
+    k_pq = pred['k_pq']
+    lambda_p = pred['lambda_p']
 
- K = pred['K']
- KDE = pred['KDE']
- eta = pred['eta']
- gamma_p = pred['gamma_p']
- gamma_q = pred['gamma_q']
- k_pq = pred['k_pq']
- lambda_p = pred['lambda_p']
+    figure, axis = plt.subplots(2, 1)
+    p1 = axis[0]
+    p2 = axis[1]
 
- figure, axis = plt.subplots(2, 1)
- p1=axis[0]
- p2 =axis[1]
+    m1 = CancerModel(lambda_p, gamma_q, gamma_p, KDE, k_pq, K, eta)
 
- m1 = CancerModel(lambda_p,gamma_q,gamma_p,KDE,k_pq,K,eta)
+    df = pd.read_csv(origin_path)
+    X0 = [df['prolif_cells'].iloc[0], df['dead_cells'].iloc[0], df['curement'].iloc[0]]
 
- df = pd.read_csv(origin_path)
- X0 = [df['prolif_cells'].iloc[0], df['dead_cells'].iloc[0], df['curement'].iloc[0]]
+    t = np.arange(0, len(df.t))
+    x = odeint(m1.model, X0, t)
+    P = x[:, 0]
+    Q = x[:, 1]
+    C = x[:, 2]
 
- t = np.arange(0,len(df.t))
- x = odeint(m1.model,X0, t)
- P = x[:, 0]
- Q = x[:, 1]
- C = x[:, 2]
+    p1.plot(t, P, 'g', label="P")
+    p1.plot(t, Q, 'b', label="Q")
+    p1.legend()
 
- p1.plot(t, P, 'g', label="P")
- p1.plot(t, Q,  'b',label="Q")
- p1.legend()
+    p2.plot(t, C, 'y', label="P")
+    plt.show()
 
- p2.plot(t, C, 'y', label="P")
- plt.show()
 
-pred={'K': 50.255821611397344, 'KDE': 0.012609686392283898, 'eta': 0.7957916892534629, 'gamma_p': 5.360502625576902, 'gamma_q': 18.254004359130974, 'k_pq': 8.14782487806399e-06, 'lambda_p': 0.0060442423987455435}
-plot_simple_results(pred,"asymilacja/trening/okres.csv")
+if __name__ == "__main__":
+    pred = {'K': 222.26912030083898, 'KDE': 0.0022379173337168695, 'eta': 0.9398272992772523, 'gamma_p': 10.704809708433405, 'gamma_q': 19.758732923512987, 'k_pq': 1.6247407229958707e-05, 'lambda_p': 4.4135534550830785e-11}
+    plot_simple_results(pred, "data/klusek/patient4/okres.csv")
 
-plot_gt("asymilacja/trening/okres.csv")
+    plot_gt("data/klusek/patient4/okres.csv")

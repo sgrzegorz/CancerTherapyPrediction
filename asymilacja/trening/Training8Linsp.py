@@ -52,7 +52,7 @@ def residual(ps, ts, data):
     return (model - data).ravel()
 
 
-df_true = pd.read_csv("data/klusek/out/okres.csv")
+df_true = pd.read_csv("data/klusek/patient4/okres.csv")
 threatment_end = df_true['prolif_cells'].idxmin()
 
 # fix curement function

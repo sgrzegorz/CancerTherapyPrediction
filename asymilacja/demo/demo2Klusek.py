@@ -7,7 +7,7 @@ from asymilacja.utlis.datasets import klusek_dataset
 from scipy.signal import argrelextrema
 
 
-df = klusek_dataset("data/klusek/2dawki.txt")
+df = klusek_dataset("data/klusek/patient4/2dawki.txt")
 
 # plt.plot(df.t,df.prolif_cells, label = "prolif")
 # plt.plot(df.t,df.dead_cells, label = "prolif")

@@ -80,7 +80,7 @@ plot_parameters(fivesixth,label="5/6 threatmentTime")
 plot_parameters(sixsixth,label="threatmentTime")
 
 
-df_true = pd.read_csv("data/klusek/out/2dawki_first_curement.txt",index_col=0)
+df_true = pd.read_csv("data/klusek/patient4/2dawki_first_curement.txt",index_col=0)
 P_true = list(df_true.prolif_cells)
 t_true = list(df_true.index)
 
