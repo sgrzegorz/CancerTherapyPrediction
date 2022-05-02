@@ -24,7 +24,7 @@ def f(y, t, paras):
 
         gamma_p = paras['gamma_p'].value
         KDE = paras['KDE'].value
-        KDE = KDE*paras['C0'].value
+        # KDE = KDE*paras['C0'].value
 
         K = paras['K'].value
         eta = paras['eta'].value
@@ -57,6 +57,7 @@ def residual(ps, ts, data):
 
 df_true = pd.read_csv("data/klusek/patient3/stats_wszystkie_iteracje.csv")
 from data.klusek.patient3.config import threatment_start, threatment_end,threatment2_start
+threatment_time = threatment_end - threatment_start
 df_true = df_true[(df_true['iteration'] >= threatment_start) & (df_true['iteration']<=threatment2_start)]
 
 # threatment_end = df_true['prolif_cells'].idxmin()
@@ -109,10 +110,11 @@ params = Parameters()
 params.add('P0', value=P[0], vary=False)
 params.add('C0', min=3, max=10)
 params.add('gamma_p',value=0.003, min=0.0000001, max=.1)
-params.add('KDE', value=0.007, min=0.000001, max=0.7) #uwaga KDE jest modyfikowana w f,
+params.add('KDE', value=0.007, min=0.00001, max=0.7) #uwaga KDE jest modyfikowana w f,
 params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
 # params.add('eta', expr='0.2*C0')
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
+params.add('KDE', value=0.007, expr=f'-ln(eta)/({threatment_time}+200)')
 
 # psi_p < lambda_p
 params.add('psi_p', min=0.0005, max=0.002)
