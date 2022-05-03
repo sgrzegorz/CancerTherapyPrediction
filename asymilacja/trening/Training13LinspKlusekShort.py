@@ -115,11 +115,11 @@ params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 params.add('KDE', value=0.007, expr=f'-ln(eta)/({threatment_time}+200)')
 params.add('lambda_p', min=0.000005, max=0.08)
-params.add('alpha', min=0.00000005, max=0.008)
+params.add('alpha', min=0.00000003, max=0.008)
 
 
 # fit model
-result = minimize(residual, params, args=(t, x2_measured), method='least_squares')  # leastsq nelder
+result = minimize(residual, params, args=(t, x2_measured), method='powell')  # leastsq nelder
 data_fitted = g(t_true, [P[0], result.params['C0'].value], result.params)
 
 # plot fitted data
