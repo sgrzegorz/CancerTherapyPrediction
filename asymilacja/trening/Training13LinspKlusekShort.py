@@ -68,8 +68,8 @@ fig, (plt1,plt2) = plt.subplots(2,1)
 fig.tight_layout(pad=4.0)
 plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 
-df = df_true
-# df = df_true[df_true.index < (6/6*threatment_time)+threatment_start]
+# df = df_true
+df = df_true[df_true.index < (6/6*threatment_time)+threatment_start]
 
 if df.empty:
     raise ValueError("No data provided!")
@@ -114,8 +114,11 @@ params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
 # params.add('eta', expr='0.2*C0')
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 params.add('KDE', value=0.007, expr=f'-ln(eta)/({threatment_time}+200)')
-params.add('lambda_p', min=0.000005, max=0.08)
-params.add('alpha', min=0.00000003, max=0.008)
+params.add('alpha', min=0.000005, max=0.08)
+
+# alpha < lambda_p bo alpha/lambda_p ma byc  ułamkiem
+params.add('alpha_diff', min=0.00003, max=0.008)
+params.add('lambda_p', expr='alpha_diff + alpha')
 
 
 # fit model
