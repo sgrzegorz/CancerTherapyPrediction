@@ -65,11 +65,11 @@ N_true = list(df_true.dead_cells)
 t_true = list(df_true.iteration)
 
 fig, (plt1,plt2) = plt.subplots(2,1)
-fig.tight_layout(pad=4.0)
+fig.set_figheight(10)
 plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 
-# df = df_true
-df = df_true[df_true.index < (6/6*threatment_time)+threatment_start]
+df = df_true
+# df = df_true[df_true.index < (5/6*threatment_time)+threatment_start]
 
 if df.empty:
     raise ValueError("No data provided!")
@@ -84,13 +84,9 @@ if df.empty:
 # df = df_true[warunek]
 
 
-# df = df[df.index % 1000 == 0]
+# df = df.iloc[::1000,:] #weź co n-ty wynik
 
-# noise = np.random.normal(0, .1, df.shape[0]) *0.05* np.max(df.prolif_cells)
-# P = list(df.prolif_cells+noise)
 P = list(df.prolif_cells)
-
-
 N = list(df.dead_cells)
 t = list(df.iteration)
 
@@ -99,7 +95,6 @@ plt1.set_title("Rys1 Komórki proliferatywne")
 # plt.scatter(t, N, color='blue', label='N taken')
 plt2.scatter(t, np.repeat(0,len(t)), color='yellow', label='przedział uczenia')
 plt2.set_title("Rys2 Lekarstwo")
-# initial conditions
 
 # measured data
 x2_measured = np.array([P]).T

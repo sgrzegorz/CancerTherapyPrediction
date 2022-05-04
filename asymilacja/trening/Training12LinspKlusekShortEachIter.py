@@ -60,17 +60,12 @@ from data.klusek.patient3.config import threatment_start, threatment_end,threatm
 threatment_time = threatment_end - threatment_start
 df_true = df_true[(df_true['iteration'] >= threatment_start) & (df_true['iteration']<=threatment2_start)]
 
-# threatment_end = df_true['prolif_cells'].idxmin()
-
-# normalize prolif cells
-# df_true.prolif_cells = NormalizeData(list(df_true.prolif_cells))*50
-
 P_true = list(df_true.prolif_cells)
 N_true = list(df_true.dead_cells)
 t_true = list(df_true.iteration)
 
 fig, (plt1,plt2) = plt.subplots(2,1)
-fig.tight_layout(pad=4.0)
+fig.set_figheight(10)
 plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 
 df = df_true
