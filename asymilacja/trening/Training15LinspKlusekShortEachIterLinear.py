@@ -114,9 +114,8 @@ x2_measured = np.array([P]).T
 params = Parameters()
 params.add('P0', value=P[0], vary=False)
 params.add('C0', min=3, max=10)
-params.add('gamma_p',value=0.003, min=0.0000001, max=.1)
-params.add('KDE', value=0.007, min=0.00001, max=0.7) #uwaga KDE jest modyfikowana w f,
-params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
+params.add('gamma_p',value=0.003, min=0.0000001, max=6)
+params.add('K', value=1.9e6, min=1.8e6, max=10.e6)
 # params.add('eta', expr='0.2*C0')
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 params.add('KDE', value=0.007, expr=f'-ln(eta)/({threatment_time}+200)')
