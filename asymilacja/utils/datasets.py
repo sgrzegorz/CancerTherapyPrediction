@@ -28,10 +28,29 @@ def klusek_dataset(path): # 2.5. Computational model -> podane że 1 itaracja do
     df['t'] = df['iteration'] * 6 /60. /24.0 # convert iterations to days
     return df
 
+def convertIterationsToDays(iterations):
+    return iterations* 6 / 60. / 24.0
+
+def preprocess_klusek_dataset(inPath,outPath):
+    header = ['iteration', 'alive_cells', 'silent_cells', 'dead_cells', 'number_of_artery_giving_oxygen', 'volume','curement']
+    df = pd.read_csv(inPath, sep=' ', names=header, skiprows=1,index_col=None)
+    df['prolif_cells'] = df['alive_cells'] + df['silent_cells']
+    df = df.drop('silent_cells', 1)
+    df = df.drop('alive_cells', 1)
+    # df.index = df.index-139
+    df['t'] = convertIterationsToDays(df['iteration'])
+
+    # df["meta"] = np.nan
+    df.to_csv(outPath,index=False)
 
 # def partition_klusek(df):
 #     maximums = argrelextrema(df.prolif_cells.to_numpy(), np.greater)
 #     x = [df.t[i] for i in maximums]
 #     y = [df.prolif_cells[i] for i in maximums]
 
-# df = klusek_dataset("data/klusek/stats0.txt")
+if __name__ == '__main__':
+    # preprocess_klusek_dataset("data/klusek/patient4/2dawki.txt")
+    # preprocess_klusek_dataset("data/klusek/patient3/stats_wszystkie_iteracje.txt","data/klusek/patient3/stats_wszystkie_iteracje.csv")
+    # preprocess_klusek_dataset("data/klusek/patient202205041854/stats0.txt","data/klusek/patient202205041854/stats0.csv")
+
+    pass

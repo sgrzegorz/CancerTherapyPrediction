@@ -3,7 +3,7 @@ from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from asymilacja.utlis.datasets import ribba_dataset
+from asymilacja.utils.datasets import ribba_dataset
 
 lambda_p = 0.6326
 delta_qp = 0.6455

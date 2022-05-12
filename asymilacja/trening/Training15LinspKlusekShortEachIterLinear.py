@@ -5,7 +5,7 @@ from scipy.integrate import odeint
 from lmfit import minimize, Parameters, Parameter, report_fit
 from scipy.integrate import odeint
 
-from asymilacja.utlis.preprocessAndNormalize import NormalizeData
+from asymilacja.utils.preprocessAndNormalize import NormalizeData
 
 def plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=None,P=None):
     fig, (plt1,plt2) = plt.subplots(2,1)

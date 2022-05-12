@@ -59,7 +59,7 @@ df_true = pd.read_csv("data/klusek/patient4/okres.csv")
 threatment_end = df_true['prolif_cells'].idxmin()
 
 # fix curement function
-from asymilacja.utlis.curement1 import curement_function
+from asymilacja.utils.curement1 import curement_function
 df_true.curement = [curement_function(i,0,threatment_end) for i in list(df_true.index)]
 
 

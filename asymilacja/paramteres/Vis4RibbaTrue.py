@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
-from asymilacja.utlis.datasets import ribba_dataset
-from asymilacja.utlis.curement import curement_function
+from asymilacja.utils.datasets import ribba_dataset
+from asymilacja.utils.curement import curement_function
 from asymilacja.model.Cancer1Ribba import CancerModel
 from numpy.polynomial import Chebyshev
 

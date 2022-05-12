@@ -5,7 +5,7 @@ from scipy.integrate import odeint
 from lmfit import minimize, Parameters, Parameter, report_fit
 from scipy.integrate import odeint
 
-from asymilacja.utlis.preprocessAndNormalize import NormalizeData
+from asymilacja.utils.preprocessAndNormalize import NormalizeData
 
 
 def unit_step_fun(x,threshold):

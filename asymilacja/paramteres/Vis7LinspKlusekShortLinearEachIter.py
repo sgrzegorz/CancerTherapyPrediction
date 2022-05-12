@@ -23,7 +23,7 @@ def feed_forward(y,t,paras):
     return [dPdt, dCdt]
 
 
-def plot_parameters(differentialForward,parameters,steps_forward,steps_backward,threatment_start,label=None,USE_REAL_TIME=False,t_real=None,differentialBackward=None):
+def plot_parameters(differentialForward,parameters,steps_forward,steps_backward,threatment_start,label=None,USE_REAL_TIME=False,t_real=None,differentialBackward=None,lineLabel=None):
     if differentialBackward is None:
         differentialBackward = differentialForward
     # steps_backward=1000
@@ -51,8 +51,12 @@ def plot_parameters(differentialForward,parameters,steps_forward,steps_backward,
 
     if USE_REAL_TIME:
         plt.plot(t_real, P, label=label)
+        if lineLabel is not None:
+            plt.text(t[-1], P[-1], f'{lineLabel}')
     else:
         plt.plot(t, P, label=label)
+        if lineLabel is not None:
+            plt.text(t[-1], P[-1], f'{lineLabel}')
 
 def plot_truth(t_true,P_true,USE_REAL_TIME=False,t_real=None):
     if USE_REAL_TIME:
@@ -60,6 +64,25 @@ def plot_truth(t_true,P_true,USE_REAL_TIME=False,t_real=None):
         plt.xlabel('time [days]')
     else:
         plt.plot(t_true, P_true,color='black', linewidth=2, label='model Adriana')
+
+def plot_curement(differentialMethod,parameters,steps_forward,threatment_start,params_eta=None):
+    if params_eta is None:
+        params_eta = parameters['eta']
+
+    t2 = np.linspace(0, steps_forward, steps_forward + 1) + threatment_start
+    x0 = [parameters['P0'], parameters['C0']]
+    x = odeint(differentialMethod, x0, t2, args=(parameters,))
+    C_fitted = x[:, 1]
+    plt.title("Rys2 Lekarstwo")
+    plt.plot(t2, C_fitted, '-', linewidth=1, color='green', label='model uproszczony')
+    plt.plot(t2, np.repeat(params_eta, len(t2)), '--', linewidth=1, color='blue', label='threshold')
+    plt.xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa")
+    plt.plot(t2, [unit_step_fun(x, params_eta) for x in C_fitted], '--', linewidth=1, color='brown',
+              label="efektywność lekarstwa")
+    # plt.legend()
+    plt.xlim([0, t2[-1]])
+
+    # plt.show()
 
 
 if __name__ == '__main__':
