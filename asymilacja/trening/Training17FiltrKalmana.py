@@ -1,5 +1,8 @@
+import numpy as np
 from matplotlib import pyplot as plt
 from numpy import array
+def unit_step_fun(x,threshold):
+    return x*(1 / 2 + 1 / 2 *np.tanh(100 * (x-threshold)))
 
 groundTruthObservation = [53.24271645564879, 55.73408614284355, 57.813057709561186, 59.62972666793778,
                           61.24840184295388,
@@ -23,31 +26,25 @@ groundTruthObservation = [53.24271645564879, 55.73408614284355, 57.8130577095611
                           37.41004168571596, 39.57705260790178, 41.06724823357617, 43.37195516176883, 45.76131544560512,
                           48.517302035576286]
 
-initState = [0, 4.72795425, 48.51476221, 0]
+initState = [53.24271645564879,0]
 
-baseLambdap = 6.80157379e-01
-baseK = 1.60140838e+02
-baseKqpp = 0.00000001e+00
-baseKpq = 4.17370748e-01
-baseGammap = 5.74025981e+00
-baseGammaq = 1.34300000e+00
-baseDeltaqp = 6.78279483e-01
-baseKDE = 9.51318080e-02
+base_lambda_p = 6.80157379e-01
+base_K = 1.60140838e+02
+base_gamma_p = 0.00000001e+00
+base_eta = 4.17370748e-01
+base_KDE =  9.51318080e-02
 
-idealX = array([baseLambdap, baseK, baseKqpp, baseKpq, baseGammap, baseGammaq, baseDeltaqp, baseKDE])
+
+idealX = array([base_lambda_p, base_K, base_gamma_p, base_eta, base_KDE])
 
 
 # our tumor growth model
-def rhs(z, t, lambdap, K, kqpp, kpq, gammap, gammaq, deltaqp, KDE):
-    C, P, Q, QP = z
-    Pstar = P + Q + QP
+def rhs(z, t, lambda_p, K, gamma_p, eta, KDE):
+    P, C = z
 
-    dCdt = -KDE * C
-    dPdt = lambdap * P * (1 - Pstar / K) + kqpp * QP - kpq * P - gammap * C * KDE * P
-    dQdt = kpq * P - gammaq * C * KDE * Q
-    dQpdt = gammaq * C * KDE * Q - kqpp * QP - deltaqp * QP
-    dzdt = [dCdt, dPdt, dQdt, dQpdt]
-    return dzdt
+    dCdt =-KDE * C
+    dPdt = lambda_p * P*(1-P/K)  - gamma_p * unit_step_fun(C,eta)  * P
+    return [dPdt, dCdt]
 
 # !pip install adao
 import numpy, scipy, adao
@@ -87,9 +84,9 @@ def H( Z ):
     # Z <=> [state, parameters]
     #
     __Z = numpy.ravel(Z)
-    Pstar = __Z[1]+__Z[2]+__Z[3]
+    # Pstar = __Z[1]+__Z[2]+__Z[3]
     #
-    return numpy.array(Pstar)
+    return numpy.array(__Z[0])
 
 def F( Z ):
     "Evolution operator"
@@ -97,22 +94,22 @@ def F( Z ):
     #
     __Z = numpy.ravel(Z)
     #
-    lambdap,K,kqpp,kpq,gammap,gammaq,deltaqp,KDE = __Z[4:]
+    lambda_p, K, gamma_p, eta, KDE = __Z[2:]
     #
     dt = 0.1 * TimeBetween2Obs
     # Initial state
-    z = numpy.ravel(__Z[0:4])
+    z = numpy.ravel(__Z[0:2])
     state = None
     # state.append(z)
     for step in range(NbOfEulerStep):
         dt = TimeBetween2Obs * step/NbOfEulerStep
         # Use rhs to calculate dz/dt
-        dzdt = numpy.ravel(rhs(z,None,lambdap,K,kqpp,kpq,gammap,gammaq,deltaqp,KDE))
+        dzdt = numpy.ravel(rhs(z,None,lambda_p, K, gamma_p, eta, KDE))
         # dt/dt = (z(t+1) - z(t)) / dt ===> z(t+1) = z(t) + (dz/dt) * dt
         z = z + numpy.ravel(dzdt) * dt
         state = z
     #
-    __Znpu = state.tolist()+__Z[4:].tolist()
+    __Znpu = state.tolist()+__Z[2:].tolist()
     #
     return __Znpu
 
