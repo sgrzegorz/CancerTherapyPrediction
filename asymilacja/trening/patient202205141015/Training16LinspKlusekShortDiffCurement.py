@@ -54,7 +54,7 @@ maxi = np.max(df.prolif_cells)
 params = Parameters()
 params.add('P0', value=P[0], vary=False)
 params.add('C0', min=1, max=10)
-params.add('K', value=maxi, min=0.9*maxi, max=1.1*maxi)
+params.add('K', value=1.1*maxi, min=1.0*maxi, max=1.7*maxi)
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 params.add('gamma_p',value=0.003, min=0.001, max=0.01)
 params.add('KDE', value=3e-6, min=1e-6,max=9e-6)
