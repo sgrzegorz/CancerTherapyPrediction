@@ -7,6 +7,7 @@ from scipy.integrate import odeint
 
 from asymilacja.utils.preprocessAndNormalize import NormalizeData
 
+
 def plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=None,P=None):
     fig, (plt1,plt2) = plt.subplots(2,1)
     fig.set_figheight(10)
@@ -23,7 +24,7 @@ def plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=None,P=None
 
     plt2.set_title("Rys2 Lekarstwo")
     plt2.plot(t_true, C_fitted, '-', linewidth=1, color='green', label='model uproszczony')
-    plt2.plot(t_true, np.repeat(params_eta,len(t_true)), '--', linewidth=1, color='blue', label='threshold (parametr eta)')
+    plt2.plot(t_true, np.repeat(params_eta,len(t_true)), '--', linewidth=1, color='blue', label='threshold')
     plt2.set_xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa")
     plt2.plot(t_true,[unit_step_fun(x,params_eta) for x in data_fitted[:, 1]],'--',linewidth=1,color='brown',label="efektywność lekarstwa")
     plt2.legend()
@@ -35,6 +36,7 @@ def unit_step_fun(x,threshold):
 
 def f(y, t, paras):
     [P, C] = y
+    alpha = paras['alpha'].value
     lambda_p = paras['lambda_p'].value
     gamma_p = paras['gamma_p'].value
     KDE = paras['KDE'].value
@@ -43,7 +45,7 @@ def f(y, t, paras):
     eta = eta*paras['C0'].value
 
     dCdt =-KDE * C
-    dPdt = lambda_p * P*(1-P/K)  - gamma_p * unit_step_fun(C,eta)  * P
+    dPdt = lambda_p * P*(1-P/K)  - alpha*t - gamma_p * unit_step_fun(C,eta)  * P
     return [dPdt, dCdt]
 
 
@@ -55,7 +57,7 @@ def g(t, x0, paras):
 def residual(ps, ts, data):
     x0 = ps['P0'].value, ps['C0'].value
     model = g(ts, x0, ps)
-    return (model[:,0] - data).ravel()
+    return (model - data).ravel()
 
 
 df_true = pd.read_csv("data/klusek/patient202205141015/stats0.csv")
@@ -74,7 +76,7 @@ t_true = list(df_true.iteration)
 
 
 df = df_true
-# df = df_true[df_true.index < (6/6*threatment_time)+threatment_start]
+# df = df_true[df_true.index < (5/6*threatment_time)+threatment_start]
 
 if df.empty:
     raise ValueError("No data provided!")
@@ -89,38 +91,38 @@ if df.empty:
 # df = df_true[warunek]
 
 
-# df = df.iloc[::10,:] #weź co n-ty wynik
+# df = df.iloc[::1000,:] #weź co n-ty wynik
 
 P = list(df.prolif_cells)
+N = list(df.dead_cells)
 t = list(df.iteration)
+
 
 
 # measured data
 x2_measured = np.array([P]).T
-maxi = np.max(df.prolif_cells)
 
 # set parameters including bounds; you can also fix parameters (use vary=False)
 params = Parameters()
 params.add('P0', value=P[0], vary=False)
 params.add('C0', min=3, max=10)
-params.add('gamma_p',value=0.003, min=0.0001, max=0.01)
-params.add('K', value=maxi, min=0.9*maxi, max=1.1*maxi)
+params.add('gamma_p',value=0.003, min=0.0000001, max=.1)
+params.add('KDE', value=0.007, min=0.00001, max=0.7) #uwaga KDE jest modyfikowana w f,
+params.add('K', value=0.4e6, min=0.2e6, max=0.5e6)
 # params.add('eta', expr='0.2*C0')
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 params.add('KDE', value=0.007, expr=f'-ln(eta)/({threatment_time}+200)')
-params.add('lambda_p', value=0.005,min=0.0001,max=0.01)
+params.add('alpha', min=0.000005, max=0.08)
 
-t_measured = np.linspace(threatment_start,threatment_end,num=4)
-# t_measured=t_measured[:-1]
-t_measured = np.concatenate((t_measured,np.linspace(threatment_end,threatment2_start,num=6)))
-t_measured = np.around(t_measured)
-# t = [int(i) for i in t]
-P_measured = df.loc[t_measured,'prolif_cells'].to_list()
+# alpha < lambda_p bo alpha/lambda_p ma byc  ułamkiem
+params.add('alpha_diff', value=15,min=15, max=25)
+params.add('lambda_p', expr='alpha_diff * alpha')
+
+
 # fit model
-result = minimize(residual, params, args=(t_measured, P_measured), method='powell')  # leastsq nelder
+result = minimize(residual, params, args=(t, x2_measured), method='powell')  # leastsq nelder
 
 x0 = [P[0], result.params['C0'].value]
-
 data_fitted = g(t_true, x0, result.params)
 P_fitted = data_fitted[:, 0]
 C_fitted =data_fitted[:, 1]
