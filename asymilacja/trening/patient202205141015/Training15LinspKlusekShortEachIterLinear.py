@@ -84,11 +84,9 @@ data_fitted = g(t_true, x0, result.params)
 P_fitted = data_fitted[:, 0]
 C_fitted =data_fitted[:, 1]
 params_eta =result.params['eta'].value*result.params['C0'].value
-
 plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=t,P=P,t_measured=t_measured, P_measured=P_measured)
 
 # display fitted statistics
 report_fit(result)
-
 print(result.params.valuesdict())
 
