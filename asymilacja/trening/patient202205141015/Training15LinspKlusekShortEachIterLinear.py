@@ -70,8 +70,8 @@ params.add('lambda_p', value=0.005,min=0.0001,max=0.01)
 
 df_1 = df.loc[df['iteration'] <= threatment_end]
 df_2 = df.loc[df['iteration'] > threatment_end]
-df_1 = df_1.iloc[::700,:]
-df_2 = df_2.iloc[::8000,:]
+df_1 = df_1.iloc[::200,:]
+df_2 = df_2.iloc[::3000,:]
 df_sampled = pd.concat([df_1,df_2])
 t_measured = list(df_sampled.iteration)
 P_measured = list(df_sampled.prolif_cells)
