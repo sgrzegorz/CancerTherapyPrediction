@@ -87,3 +87,4 @@ plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=t,P=P,t_measure
 report_fit(result)
 print(result.params.valuesdict())
 
+

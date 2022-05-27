@@ -75,3 +75,4 @@ if __name__ == '__main__':
 
     report_fit(result)
     print(result.params.valuesdict())
+
