@@ -32,8 +32,8 @@ def residual(ps, ts, data):
     return (model[:,0] - data).ravel()
 
 
-df_true = pd.read_csv("data/klusek/patient202205141015/stats0.csv")
-from data.klusek.patient202205141015.config import threatment_start, threatment_end,threatment2_start
+df_true = pd.read_csv("data/klusek/EP3/stats0.csv")
+from data.klusek.EP3.config import threatment_start, threatment_end,threatment2_start
 threatment_time = threatment_end - threatment_start
 df_true = df_true[(df_true['iteration'] >= threatment_start) & (df_true['iteration']<=threatment2_start)]
 
@@ -81,5 +81,4 @@ plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=t,P=P,t_measure
 
 report_fit(result)
 print(result.params.valuesdict())
-
 

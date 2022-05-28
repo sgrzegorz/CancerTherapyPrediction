@@ -28,8 +28,8 @@ def residual(ps, ts, data):
     return (model[:,0] - data).ravel()
 
 if __name__ == '__main__':
-    df_true = pd.read_csv("data/klusek/patient202205141015/stats0.csv")
-    from data.klusek.patient202205141015.config import threatment_start, threatment_end,threatment2_start
+    df_true = pd.read_csv("data/klusek/EP3/stats0.csv")
+    from data.klusek.EP3.config import threatment_start, threatment_end,threatment2_start
     threatment_time = threatment_end - threatment_start
     df_true = df_true[(df_true['iteration'] >= threatment_start) & (df_true['iteration']<=threatment2_start)]
 
@@ -45,11 +45,12 @@ if __name__ == '__main__':
     N = list(df.dead_cells)
     t = list(df.iteration)
 
+    maxi = np.max(df.prolif_cells)
     params = Parameters()
     params.add('P0', value=P[0], vary=False)
     params.add('C0', min=1e-5, max=10)
     params.add('gamma_p', min=0.00005, max=0.2)
-    params.add('K', value=0.35e6, min=0.3e6, max=0.5e6)
+    params.add('K', value=1.1 * maxi, min=1.0 * maxi, max=1.7 * maxi)
     params.add('T_death', value=0.35e6, min=0.3e6, max=0.5e8)
     params.add('eta', value=0.1, min=0.05, max=0.2) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
     params.add('KDE',  expr=f'-ln(eta)/({threatment_time}+200)')
@@ -75,4 +76,3 @@ if __name__ == '__main__':
 
     report_fit(result)
     print(result.params.valuesdict())
-

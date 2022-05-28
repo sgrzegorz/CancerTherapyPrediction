@@ -13,7 +13,7 @@ def plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=None,P=None
     if t_measured is not None and P_measured is not None:
         plt1.scatter(t_measured, P_measured,color='red', label='pomiary wykorzystane do uczenia')
 
-    plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
+    plt1.plot(t_true, P_true,color='black', linewidth=1, label='model czasowo-przestrzenny 3d')
     plt1.set_title("Rys1 Komórki proliferatywne")
     plt1.plot(t_true, P_fitted, '-', linewidth=1, color='green', label='model uproszczony ')
     plt1.set_ylabel("cells count")
