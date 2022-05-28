@@ -52,18 +52,20 @@ def plot_parameters(differentialForward,parameters,steps_forward,steps_backward,
     if USE_REAL_TIME:
         plt.plot(t_real, P, label=label)
         if lineLabel is not None:
-            plt.text(t[-1], P[-1], f'{lineLabel}')
+            plt.text(t_real[-1], P[-1], f'{lineLabel}')
     else:
         plt.plot(t, P, label=label)
         if lineLabel is not None:
             plt.text(t[-1], P[-1], f'{lineLabel}')
+    plt.ylabel("liczba komórek nowotworowych")
 
 def plot_truth(t_true,P_true,USE_REAL_TIME=False,t_real=None):
     if USE_REAL_TIME:
-        plt.plot(t_real, P_true, color='black', linewidth=2, label='model Adriana')
+        plt.plot(t_real, P_true, color='black', linewidth=2, label='model czasowo-przestrzenny 3d')
         plt.xlabel('time [days]')
     else:
-        plt.plot(t_true, P_true,color='black', linewidth=2, label='model Adriana')
+        plt.plot(t_true, P_true,color='black', linewidth=2, label='model czasowo-przestrzenny 3d')
+        plt.xlabel('numer iteracji')
 
 def plot_curement(differentialMethod,parameters,steps_forward,threatment_start,params_eta=None):
     if params_eta is None:
@@ -88,7 +90,7 @@ def plot_curement(differentialMethod,parameters,steps_forward,threatment_start,p
 if __name__ == '__main__':
     from data.klusek.patient3.config import threatment_start, threatment_end,threatment2_start
 
-    USE_REAL_TIME = False
+    USE_REAL_TIME = True
 
     threatment_time = threatment_end - threatment_start
     steps_backward = threatment_start
@@ -112,8 +114,8 @@ if __name__ == '__main__':
 
     plot_parameters(feed_forward,fullData,steps_forward,steps_backward,threatment_start,"fullData",USE_REAL_TIME,t_real)
     plot_parameters(feed_forward,threesixth,steps_forward,steps_backward,threatment_start,"3/6 threatmentTime",USE_REAL_TIME,t_real)
-    plot_parameters(feed_forward,fivesixth,steps_forward,steps_backward,threatment_start,"5/6 threatmentTime",USE_REAL_TIME,t_real)
-    plot_parameters(feed_forward,sixsixth,steps_forward,steps_backward,threatment_start,"6/6 threatmentTime",USE_REAL_TIME,t_real)
+    plot_parameters(feed_forward,fivesixth,steps_forward,steps_backward,threatment_start,"5/6 threatmentTime",USE_REAL_TIME,t_real,lineLabel="5/6")
+    plot_parameters(feed_forward,sixsixth,steps_forward,steps_backward,threatment_start,"6/6 threatmentTime",USE_REAL_TIME,t_real,lineLabel="full")
 
 
     plt.legend()
