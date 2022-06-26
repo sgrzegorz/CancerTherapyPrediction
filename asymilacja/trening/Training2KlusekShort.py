@@ -41,7 +41,7 @@ def model(parameters):
     m1 = CancerModel(lambda_p,gamma_q,gamma_p,KDE,k_pq,K,eta)
     # t = m1.time_interval(0,200)
 
-    x = odeint(m1.model, X0, t)
+    x, history = odeint(m1.model, X0, t,full_output=True)
 
     P = x[:, 0]
     N = x[:, 1]

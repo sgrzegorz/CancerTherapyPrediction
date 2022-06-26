@@ -55,6 +55,9 @@ if __name__ == '__main__':
     params.add('eta', value=0.1, min=0.05, max=0.2) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
     params.add('KDE',  expr=f'-ln(eta)/({threatment_time}+200)')
     params.add('lambda_p', min=0.00005, max=0.002)
+    # assimilated_parameters =
+    # for parName, parVal in assimilated_parameters.items():
+    #     params[parName].set(value=parVal)
 
     df_1 = df.loc[df['iteration'] <= threatment_end]
     df_2 = df.loc[df['iteration'] > threatment_end]
@@ -64,7 +67,7 @@ if __name__ == '__main__':
     t_measured = list(df_sampled.iteration)
     P_measured = list(df_sampled.prolif_cells)
 
-    result = minimize(residual, params, args=(t_measured, P_measured), method='least_squares')  # leastsq nelder
+    result = minimize(residual, params, args=(t_measured, P_measured), method='powell')  # leastsq nelder
 
     x0 = [P[0], result.params['C0'].value]
     data_fitted = g(t_true, x0, result.params)
@@ -75,4 +78,6 @@ if __name__ == '__main__':
 
 
     report_fit(result)
+    dopasowanie = np.linalg.norm(P_fitted - P_true, ord=2)
+    print(f'Least square test: {dopasowanie}')
     print(result.params.valuesdict())

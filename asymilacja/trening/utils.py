@@ -17,13 +17,13 @@ def plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=None,P=None
     plt1.set_title("Rys1 Komórki proliferatywne")
     plt1.plot(t_true, P_fitted, '-', linewidth=1, color='green', label='model uproszczony ')
     plt1.set_ylabel("cells count")
-    plt1.set_xlabel("time")
+    plt1.set_xlabel("iterations")
     plt1.legend()
 
     plt2.set_title("Rys2 Lekarstwo")
     plt2.plot(t_true, C_fitted, '-', linewidth=1, color='green', label='model uproszczony')
     plt2.plot(t_true, np.repeat(params_eta,len(t_true)), '--', linewidth=1, color='blue', label='threshold')
-    plt2.set_xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa")
+    plt2.set_xlabel("iterations\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa")
     plt2.plot(t_true,[unit_step_fun(x,params_eta) for x in C_fitted],'--',linewidth=1,color='brown',label="efektywność lekarstwa")
     plt2.legend()
 

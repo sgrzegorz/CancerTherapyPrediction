@@ -31,12 +31,12 @@ curement = [curement_function(i,threatment_start,threatment_end) for i in t]
 
 
 
-# plt.scatter(t,mtd)
-# plt.xlabel("time [months]")
-# plt.ylabel("mtd [mm]")
-# plt.show()
-# plt.plot(df.t,df['curement'])
-# plt.show()
+plt.scatter(t,mtd)
+plt.xlabel("time [months]")
+plt.ylabel("mtd [mm]")
+plt.show()
+plt.plot(df.t,df['curement'])
+plt.show()
 
 
 P0 = 0.1 *mtd[0]

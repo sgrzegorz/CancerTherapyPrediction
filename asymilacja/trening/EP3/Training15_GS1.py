@@ -63,6 +63,9 @@ params.add('K', value=1.1 * maxi, min=1.0 * maxi, max=1.7 * maxi)
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 params.add('KDE', value=0.007, expr=f'-ln(eta)/({threatment_time}+200)')
 params.add('lambda_p', value=0.005,min=0.0001,max=0.01)
+# assimilated_parameters =
+# for parName, parVal in assimilated_parameters.items():
+#     params[parName].set(value=parVal)
 
 
 df_1 = df.loc[df['iteration'] <= threatment_end]
@@ -85,5 +88,7 @@ plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=t,P=P,t_measure
 
 # display fitted statistics
 report_fit(result)
+dopasowanie = np.linalg.norm(P_fitted - P_true, ord=2)
+print(f'Least square test: {dopasowanie}')
 print(result.params.valuesdict())
 

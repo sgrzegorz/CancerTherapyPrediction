@@ -27,8 +27,10 @@ class CancerModel:
         k_qpp =self.k_qpp  # the rate constant for transfer from damaged quiescent tissue to proliferative tissue,
         k_pq =self.k_pq  # the rate constant for transition from proliferation to quiescence. Tumor specific
         K = self.K
-
-        dCdt = -KDE * C
+        if t==0:
+            dCdt = 1.0
+        else:
+            dCdt = -KDE * C
         dPdt = lambda_p * P*(1 - (P + Q + Q_p)/K) + k_qpp * Q_p - k_pq * P - gamma_p * C * KDE * P
         dQdt = k_pq * P - gamma_q * C * KDE * Q
         dQ_pdt = gamma_q * C *KDE * Q - k_qpp * Q_p - delta_qp * Q_p

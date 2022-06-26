@@ -23,7 +23,7 @@ def feed_forward(y,t,paras):
     return [dPdt, dCdt]
 
 
-def plot_parameters(differentialForward,parameters,steps_forward,steps_backward,threatment_start,label=None,USE_REAL_TIME=False,t_real=None,differentialBackward=None,lineLabel=None):
+def plot_parameters(differentialForward,parameters,steps_forward,steps_backward,threatment_start,label=None,USE_REAL_TIME=False,t_real=None,differentialBackward=None,lineLabel=None,lineLabelColor=None):
     if differentialBackward is None:
         differentialBackward = differentialForward
     # steps_backward=1000
@@ -52,19 +52,19 @@ def plot_parameters(differentialForward,parameters,steps_forward,steps_backward,
     if USE_REAL_TIME:
         plt.plot(t_real, P, label=label)
         if lineLabel is not None:
-            plt.text(t_real[-1], P[-1], f'{lineLabel}')
+            plt.text(t_real[-1], P[-1], f'{lineLabel}',color=lineLabelColor)
     else:
         plt.plot(t, P, label=label)
         if lineLabel is not None:
-            plt.text(t[-1], P[-1], f'{lineLabel}')
+            plt.text(t[-1], P[-1], f'{lineLabel}',color=lineLabelColor)
     plt.ylabel("liczba komórek nowotworowych")
 
 def plot_truth(t_true,P_true,USE_REAL_TIME=False,t_real=None):
     if USE_REAL_TIME:
-        plt.plot(t_real, P_true, color='black', linewidth=2, label='model czasowo-przestrzenny 3d')
+        plt.plot(t_real, P_true, color='black', linewidth=2, label='model czasowo-przestrzenny 3D')
         plt.xlabel('time [days]')
     else:
-        plt.plot(t_true, P_true,color='black', linewidth=2, label='model czasowo-przestrzenny 3d')
+        plt.plot(t_true, P_true,color='black', linewidth=2, label='model czasowo-przestrzenny 3D')
         plt.xlabel('numer iteracji')
 
 def plot_curement(differentialMethod,parameters,steps_forward,threatment_start,params_eta=None):

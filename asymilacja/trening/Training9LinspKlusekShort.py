@@ -71,8 +71,8 @@ C_true = list(df_true.curement)
 t_true = list(df_true.index)
 
 fig, (plt1,plt2) = plt.subplots(2,1)
-fig.tight_layout(pad=4.0)
-plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
+fig.set_figheight(10)
+plt1.plot(t_true, P_true,color='black', linewidth=1, label='model czasowo-przestrzenny 3d')
 
 df = df_true
 # df = df_true[df_true.index < 6/6*threatment_end]
@@ -102,15 +102,13 @@ plt1.set_title("Rys1 Komórki proliferatywne")
 # plt.scatter(t, N, color='blue', label='N taken')
 plt2.scatter(t, np.repeat(0,len(t)), color='yellow', label='przedział uczenia')
 plt2.set_title("Rys2 Lekarstwo")
-# initial conditions
-y0 = [P[0], C[0]]
 
 # measured data
 x2_measured = np.array([P]).T
 
 # set parameters including bounds; you can also fix parameters (use vary=False)
 params = Parameters()
-params.add('P0', value=y0[0], vary=False)
+params.add('P0', value=P[0], vary=False)
 params.add('C0', min=0.3, max=7)
 params.add('gamma_p',value=0.3, min=0.0001, max=1.)
 params.add('KDE', value=0.07, min=0.05, max=0.07) #uwaga KDE jest modyfikowana w f,

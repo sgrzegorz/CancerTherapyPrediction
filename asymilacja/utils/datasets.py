@@ -40,6 +40,8 @@ def preprocess_klusek_dataset(inPath,outPath):
     # df.index = df.index-139
     df['t'] = convertIterationsToDays(df['iteration'])
 
+    df = df[['iteration', 'prolif_cells', 'dead_cells','t', 'volume','curement','number_of_artery_giving_oxygen']]
+
     # df["meta"] = np.nan
     df.to_csv(outPath,index=False)
 
@@ -48,9 +50,11 @@ def preprocess_klusek_dataset(inPath,outPath):
 #     x = [df.t[i] for i in maximums]
 #     y = [df.prolif_cells[i] for i in maximums]
 
+
+
 if __name__ == '__main__':
     # preprocess_klusek_dataset("data/klusek/patient4/2dawki.txt")
     # preprocess_klusek_dataset("data/klusek/patient3/stats_wszystkie_iteracje.txt","data/klusek/patient3/stats_wszystkie_iteracje.csv")
     # preprocess_klusek_dataset("data/klusek/patient202205041854/stats0.txt","data/klusek/patient202205041854/stats0.csv")
-
+    preprocess_klusek_dataset("data/klusek/EP3/stats0.txt","data/klusek/EP3/stats0.csv")
     pass

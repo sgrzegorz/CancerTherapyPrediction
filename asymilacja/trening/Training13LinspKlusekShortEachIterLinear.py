@@ -17,7 +17,7 @@ def plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=None,P=None
         plt1.scatter(t, P,color='yellow', label='przedział uczenia')
         plt2.scatter(t, np.repeat(0, len(t)), color='yellow', label='przedział uczenia')
 
-    plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
+    plt1.plot(t_true, P_true,color='black', linewidth=1, label='model czasowo-przestrzenny 3d')
     plt1.set_title("Rys1 Komórki proliferatywne")
     plt1.plot(t_true, P_fitted, '-', linewidth=1, color='green', label='model uproszczony ')
     plt1.set_ylabel("cells count")
@@ -35,8 +35,6 @@ def plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=None,P=None
 
 def unit_step_fun(x,threshold):
     return x*(1 / 2 + 1 / 2 *np.tanh(100 * (x-threshold)))
-
-
 
 def f(y, t, paras):
     """
@@ -89,9 +87,6 @@ P_true = list(df_true.prolif_cells)
 N_true = list(df_true.dead_cells)
 t_true = list(df_true.iteration)
 
-fig, (plt1,plt2) = plt.subplots(2,1)
-fig.set_figheight(10)
-plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
 
 df = df_true
 # df = df_true[df_true.index < (5/6*threatment_time)+threatment_start]
@@ -115,11 +110,7 @@ P = list(df.prolif_cells)
 N = list(df.dead_cells)
 t = list(df.iteration)
 
-plt1.scatter(t, P,color='yellow', label='przedział uczenia')
-plt1.set_title("Rys1 Komórki proliferatywne")
-# plt.scatter(t, N, color='blue', label='N taken')
-plt2.scatter(t, np.repeat(0,len(t)), color='yellow', label='przedział uczenia')
-plt2.set_title("Rys2 Lekarstwo")
+
 
 # measured data
 x2_measured = np.array([P]).T
@@ -137,32 +128,23 @@ params.add('KDE', value=0.007, expr=f'-ln(eta)/({threatment_time}+200)')
 params.add('alpha', min=0.000005, max=0.08)
 
 # alpha < lambda_p bo alpha/lambda_p ma byc  ułamkiem
-params.add('alpha_diff', min=0.00003, max=0.008)
-params.add('lambda_p', expr='alpha_diff + alpha')
+params.add('alpha_diff', value=15,min=15, max=25)
+params.add('lambda_p', expr='alpha_diff * alpha')
 
 
 # fit model
 result = minimize(residual, params, args=(t, x2_measured), method='powell')  # leastsq nelder
-data_fitted = g(t_true, [P[0], result.params['C0'].value], result.params)
 
-# plot fitted data
+x0 = [P[0], result.params['C0'].value]
+data_fitted = g(t_true, x0, result.params)
+P_fitted = data_fitted[:, 0]
+C_fitted =data_fitted[:, 1]
 params_eta =result.params['eta'].value*result.params['C0'].value
-plt1.plot(t_true, data_fitted[:, 0], '-', linewidth=1, color='green', label='model uproszczony ')
-plt1.set_ylabel("cells count")
-plt1.set_xlabel("time")
-plt2.plot(t_true, data_fitted[:, 1], '-', linewidth=1, color='green', label='model uproszczony')
-plt2.plot(t_true, np.repeat(params_eta,len(t_true)), '--', linewidth=1, color='blue', label='threshold')
-plt2.set_xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa")
 
-plt2.plot(t_true,[unit_step_fun(x,params_eta) for x in data_fitted[:, 1]],'--',linewidth=1,color='brown',label="efektywność lekarstwa")
-plt1.legend()
-plt2.legend()
+plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=t,P=P)
 
 # display fitted statistics
 report_fit(result)
-
-
-plt.show()
 
 print(result.params.valuesdict())
 

@@ -32,7 +32,7 @@ def f(y, t, paras):
 
     dCdt = -KDE * C
 
-    dPdt = lambda_p * P*(1-P/K) - gamma_p * unit_step_fun(C,eta) * KDE * P
+    dPdt = lambda_p * P*(1-P/K) - gamma_p * unit_step_fun(C,eta)  * P
     # dPdt = lambda_p * P*(1-P/K) - k_pq * P - gamma_p * C * KDE * P
 
     return [dPdt, dCdt]
@@ -56,7 +56,7 @@ df_true = pd.read_csv("data/klusek/patient4/okres.csv")
 threatment_end = df_true['prolif_cells'].idxmin()
 
 # fix curement function
-from asymilacja.utlis.curement1 import curement_function
+from asymilacja.utils.curement1 import curement_function
 df_true.curement = [curement_function(i,0,threatment_end) for i in list(df_true.index)]
 
 
@@ -69,7 +69,7 @@ fig, (plt1,plt2) = plt.subplots(2,1)
 fig.tight_layout(pad=4.0)
 
 
-plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
+plt1.plot(t_true, P_true,color='black', linewidth=1, label='model czasowo-przestrzenny 3d')
 # plt.scatter(t_true, N_true, color='green', label='N truth')
 plt2.plot(t_true, C_true, color='black', linewidth=1, label='Funkcja liniowa')
 # df.loc[df['prolif_cells'].idxmin()]['iteration']
@@ -103,11 +103,11 @@ x2_measured = np.array([P,C]).T
 # set parameters including bounds; you can also fix parameters (use vary=False)
 params = Parameters()
 params.add('P0', value=y0[0], vary=False)
-params.add('C0', value=y0[1], vary=False)
+params.add('C0', value=1.0, min=0.01, max=10)
 params.add('lambda_p', value=0.5, min=0.01, max=0.3)
-params.add('gamma_p', value=0.3, min=0.0001, max=1.)
-params.add('KDE', value=0.03, min=0.01, max=0.2)
-params.add('K', value=1.9e6, min=1.8e6, max=2.e6)
+params.add('gamma_p', value=0.3, min=0.0001, max=5.)
+params.add('KDE', value=0.03, min=0.1, max=0.9)
+params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
 params.add('eta', value=0.2, min=0.1, max=0.4)
 
 # fit model
@@ -122,13 +122,11 @@ plt1.set_ylabel("cells count")
 plt1.set_xlabel("time")
 plt2.plot(t_true, data_fitted[:, 1], '-', linewidth=1, color='green', label='model uproszczony')
 plt2.plot(t_true, np.repeat(result.params['eta'].value,len(t_true)), '--', linewidth=1, color='blue', label='threshold')
-plt2.set_xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa \n2)Poziom lekarstwa w modelu Adriana symuluję funkcją liniową")
+plt2.set_xlabel("time\n1)poniżej poziomu threshold w modelu uproszczonym lekarstwo nie działa \n2)Poziom lekarstwa w modelu czasowo-przestrzennym 3d symuluję funkcją liniową")
 
 plt1.legend()
 plt2.legend()
 
-# plt.xlim([0, max(t)])
-# plt.ylim([0, 1.1 * max(data_fitted[:, 1])])
 # display fitted statistics
 report_fit(result)
 

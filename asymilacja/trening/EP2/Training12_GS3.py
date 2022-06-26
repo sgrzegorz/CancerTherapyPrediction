@@ -63,7 +63,11 @@ if __name__ == '__main__':
     t_measured = list(df_sampled.iteration)
     P_measured = list(df_sampled.prolif_cells)
 
-    result = minimize(residual, params, args=(t_measured, P_measured), method='least_squares')  # leastsq nelder
+    result = minimize(residual, params, args=(t_measured, P_measured), method='powell')  # leastsq nelder
+    # assimilated_parameters =
+    # for parName, parVal in assimilated_parameters.items():
+    #     params[parName].set(value=parVal)
+
 
     x0 = [P[0], result.params['C0'].value]
     data_fitted = g(t_true, x0, result.params)
@@ -74,4 +78,6 @@ if __name__ == '__main__':
 
 
     report_fit(result)
+    dopasowanie = np.linalg.norm(P_fitted - P_true, ord=2)
+    print(f'Least square test: {dopasowanie}')
     print(result.params.valuesdict())

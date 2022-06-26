@@ -61,6 +61,10 @@ params.add('KDE', value=3e-6, min=1e-6,max=9e-6)
 params.add('KDE2', value=0.007, min=0.0001,max=0.01)
 params.add('lambda_p', value=0.005,min=0.000001,max=20)
 
+# assimilated_parameters =
+# for parName, parVal in assimilated_parameters.items():
+#     params[parName].set(value=parVal)
+
 df_1 = df.loc[df['iteration'] <= threatment_end]
 df_2 = df.loc[df['iteration'] > threatment_end]
 # df_1 = df_1.iloc[::200,:]
@@ -80,5 +84,7 @@ params_eta =result.params['eta'].value*result.params['C0'].value
 plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=t,P=P,t_measured=t_measured, P_measured=P_measured)
 
 report_fit(result)
+dopasowanie = np.linalg.norm(P_fitted - P_true, ord=2)
+print(f'Least square test: {dopasowanie}')
 print(result.params.valuesdict())
 

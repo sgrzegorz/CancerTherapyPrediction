@@ -11,7 +11,7 @@ __pycache__/
 .idea/**/dictionaries
 .idea/**/shelf
 jupyter-log*
-
+sandbox
 # Generated files
 .idea/**/contentModel.xml
 

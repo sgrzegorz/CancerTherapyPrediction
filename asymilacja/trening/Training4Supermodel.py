@@ -54,7 +54,7 @@ def model(parameters):
     weight2 = parameters["weight2"]
     weight3 = parameters["weight3"]
 
-    pred = {'K': 196.91524201781607, 'KDE': 0.02993977035657992, 'delta_qp': 0.518550701246765,'gamma_p': 14.179606546920718, 'gamma_q': 2.85767841085851, 'k_pq': 0.6451121356194429, 'k_qpp': 0.010125204708275796, 'lambda_p': 1.0082846643230274}
+    pred ={'K': 153.06637567395387, 'KDE': 0.03956851607368236, 'delta_qp': 0.28583663785784513, 'gamma_p': 14.350804491914408, 'gamma_q': 2.2360939069697365, 'k_pq': 0.6025872408074735, 'k_qpp': 0.013176145095952432, 'lambda_p': 1.0027455208983869}
     model1 = CancerModel(lambda_p=pred['lambda_p'], delta_qp=pred["delta_qp"], gamma_q=pred['gamma_q'], gamma_p=pred['gamma_p'], KDE=pred["KDE"], k_qpp=pred['k_qpp'], k_pq=pred['k_pq'], K=pred["K"])
     x = odeint(model1.model, X0, t)
     P1 = x[:, 0]

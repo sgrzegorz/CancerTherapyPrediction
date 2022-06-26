@@ -71,22 +71,23 @@ sixsixth = {'P0': 1741867, 'C0': 0.3000000000849464, 'gamma_p': 0.26384151821698
 
 
 fullData = {'P0': 1741867, 'C0': 0.30000000000000004, 'gamma_p': 0.26068553617550844, 'KDE': 0.05000000000004916, 'K': 1807530.2223988457, 'eta': 0.10000000000000024, 'psi_p': 0.05714603743116588, 'lambda_p_m': 0.09027214899709243, 'lambda_p': 0.14741818642825832}
-
-from asymilacja.model.Cancer6LinspKlusekShort import plot_parameters
-
-plot_parameters(fullData,label="fullData")
-plot_parameters(threesixth,label="1/2 threatmentTime")
-plot_parameters(fivesixth,label="5/6 threatmentTime")
-plot_parameters(sixsixth,label="threatmentTime")
+fullData_annealing = {'P0': 1741867, 'C0': 0.3, 'gamma_p': 0.2606842553507444, 'KDE': 0.05, 'K': 1865074.2526920114, 'eta': 0.1, 'psi_p': 0.06183867745881324, 'lambda_p_m': 0.09027148133786354, 'lambda_p': 0.15211015879667678}
 
 
-df_true = pd.read_csv("data/klusek/patient4/2dawki_first_curement.txt",index_col=0)
+# plot_parameters(fullData,label="fullData")
+# plot_parameters(threesixth,label="1/2 threatmentTime")
+# plot_parameters(fivesixth,label="5/6 threatmentTime")
+# plot_parameters(sixsixth,label="threatmentTime")
+plot_parameters(fullData_annealing,label="fullData_annealing")
+
+
+df= pd.read_csv("data/klusek/patient4/2dawki_first_curement.txt",index_col=0)
+from data.klusek.patient4.config import threatment_start, threatment_end,threatment2_start
+df_true = df[(df['iteration'] >= 0) & (df['iteration']<threatment2_start)]
 P_true = list(df_true.prolif_cells)
 t_true = list(df_true.index)
 
-plt.plot(t_true, P_true,color='black', linewidth=2, label='model Adriana')
+plt.plot(t_true, P_true,color='black', linewidth=2, label='model czasowo-przestrzenny 3d')
 
-
-plot_parameters(fullData)
 plt.legend()
 plt.show()

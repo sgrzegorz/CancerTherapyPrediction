@@ -55,15 +55,21 @@ if __name__ == '__main__':
     params.add('KDE',  expr=f'-ln(eta)/({threatment_time}+200)')
     params.add('lambda_p', min=0.00005, max=0.002)
 
+    # assimilated_parameters ={'P0': 142730, 'C0': 9.997599278274212, 'gamma_p': 9.69571151252561e-05, 'K': 499999.9999991985, 'T_death': 33916095.87874119, 'eta': 0.19999610420891356, 'KDE': 0.0006645158511887903, 'lambda_p': 6.452133696263065e-05}
+    # for parName, parVal in assimilated_parameters.items():
+    #     params[parName].set(value=parVal)
+
     df_1 = df.loc[df['iteration'] <= threatment_end]
     df_2 = df.loc[df['iteration'] > threatment_end]
-    df_1 = df_1.iloc[::200,:]
-    df_2 = df_2.iloc[::2000,:]
+    df_1 = df_1.iloc[::200, :]
+    df_2 = df_2.iloc[::2000, :]
     df_sampled = pd.concat([df_1,df_2])
+    # df_sampled = df_sampled.iloc[::15000, :]
     t_measured = list(df_sampled.iteration)
     P_measured = list(df_sampled.prolif_cells)
 
-    result = minimize(residual, params, args=(t_measured, P_measured), method='least_squares')  # leastsq nelder
+    result = minimize(residual, params, args=(t_measured, P_measured), method='powell')  # leastsq nelder
+
 
     x0 = [P[0], result.params['C0'].value]
     data_fitted = g(t_true, x0, result.params)
@@ -74,5 +80,7 @@ if __name__ == '__main__':
 
 
     report_fit(result)
+    dopasowanie = np.linalg.norm(P_fitted - P_true, ord=2)
+    print(f'Least square test: {dopasowanie}')
     print(result.params.valuesdict())
 

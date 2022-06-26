@@ -65,6 +65,9 @@ params.add('alpha', min=0.000005, max=0.08)
 # alpha < lambda_p bo alpha/lambda_p ma byc  ułamkiem
 params.add('alpha_diff', value=15,min=15, max=25)
 params.add('lambda_p', expr='alpha_diff * alpha')
+# assimilated_parameters =
+# for parName, parVal in assimilated_parameters.items():
+#     params[parName].set(value=parVal)
 
 df_1 = df.loc[df['iteration'] <= threatment_end]
 df_2 = df.loc[df['iteration'] > threatment_end]
@@ -85,5 +88,7 @@ params_eta =result.params['eta'].value*result.params['C0'].value
 plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=t,P=P,t_measured=t_measured, P_measured=P_measured)
 
 report_fit(result)
+dopasowanie = np.linalg.norm(P_fitted - P_true, ord=2)
+print(f'Least square test: {dopasowanie}')
 print(result.params.valuesdict())
 

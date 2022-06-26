@@ -63,8 +63,8 @@ params.add('lambda_p', value=0.005,min=0.000001,max=20)
 
 df_1 = df.loc[df['iteration'] <= threatment_end]
 df_2 = df.loc[df['iteration'] > threatment_end]
-# df_1 = df_1.iloc[::200,:]
-# df_2 = df_2.iloc[::3000,:]
+df_1 = df_1.iloc[::200,:]
+df_2 = df_2.iloc[::3000,:]
 df_sampled = pd.concat([df_1,df_2])
 t_measured = list(df_sampled.iteration)
 P_measured = list(df_sampled.prolif_cells)
@@ -80,6 +80,8 @@ params_eta =result.params['eta'].value*result.params['C0'].value
 plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=t,P=P,t_measured=t_measured, P_measured=P_measured)
 
 report_fit(result)
+dopasowanie = np.linalg.norm(P_fitted - P_true, ord=2)
+print(f'Least square test: {dopasowanie}')
 print(result.params.valuesdict())
 
 

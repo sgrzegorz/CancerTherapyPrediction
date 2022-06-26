@@ -72,7 +72,7 @@ fig, (plt1,plt2) = plt.subplots(2,1)
 fig.tight_layout(pad=4.0)
 
 
-plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
+plt1.plot(t_true, P_true,color='black', linewidth=1, label='model czasowo-przestrzenny 3d')
 
 
 
@@ -119,19 +119,19 @@ params.add('C0', value=1.0, min=0.3, max=10)
 params.add('Q0', value=y0[2], vary=False)
 params.add('Qp0', value=y0[3], vary=False)
 
-params.add('lambda_p', value=0.5, min=0.01, max=0.3)
-params.add('gamma_p', value=0.3, min=0.0001, max=7.)
-params.add('KDE', value=0.07, min=0.05, max=0.20) #uwaga KDE jest modyfikowana w f,
+params.add('lambda_p', value=25, min=0.01, max=50)
+params.add('gamma_p', value=25, min=0.0001, max=50)
+params.add('KDE', value=0.07, min=0.05, max=0.2) #uwaga KDE jest modyfikowana w f,
 params.add('K', value=1.9e6, min=1.8e6, max=3.e6)
-params.add('k_pq', value=0.5, min=0.01, max=0.3)
-params.add('gamma_q', value=0.03, min=0.001, max=0.9)
-params.add('k_qpp', value=0.03, min=0.001, max=0.3)
-params.add('delta_qp', value=0.03, min=0.001, max=0.3)
+params.add('k_pq', value=25, min=0.01, max=50)
+params.add('gamma_q', value=25, min=0.001, max=50)
+params.add('k_qpp', value=25, min=0.001, max=50)
+params.add('delta_qp', value=25, min=0.001, max=50)
 # params.add('eta', expr='0.2*C0')
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 
 # fit model
-result = minimize(residual, params, args=(t, x2_measured), method='leastsq')  # leastsq nelder
+result = minimize(residual, params, args=(t, x2_measured), method='dual_annealing')  # leastsq nelder
 data_fitted = g(t_true, [P[0], result.params['C0'].value,result.params['Q0'].value,result.params['Qp0'].value], result.params)
 
 

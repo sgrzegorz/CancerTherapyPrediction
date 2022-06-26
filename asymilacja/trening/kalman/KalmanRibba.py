@@ -5,6 +5,8 @@ import pandas as pd
 
 
 import numpy, scipy, adao
+from scipy.integrate import odeint
+
 print("Numpy:", numpy.__version__)
 print("Scipy:", scipy.__version__)
 print("Adao:", adao.version)
@@ -36,6 +38,9 @@ def unit_step_fun(x,threshold):
 #                           35.32361261509472,
 #                           37.41004168571596, 39.57705260790178, 41.06724823357617, 43.37195516176883, 45.76131544560512,
 #                           48.517302035576286]
+
+fig, (plt1,plt2) = plt.subplots(2,1)
+fig.set_figheight(10)
 
 df_true = pd.read_csv("data/klusek/EP1/stats0.csv")
 from data.klusek.EP1.config import threatment_start, threatment_end, threatment2_start
@@ -79,8 +84,9 @@ base_KDE =  0.0004970985980341276
 
 
 
-idealX = array([base_lambda_p, base_K, base_gamma_p, base_eta, base_KDE])
+# idealX = array([base_lambda_p, base_K, base_gamma_p, base_eta, base_KDE])
 
+idealX = array([0.001,695647,0.00519,0.2,0.00349]) # adhoc
 
 def rhs(z, t, lambda_p, K, gamma_p, eta, KDE):
     P, C = z
@@ -90,17 +96,16 @@ def rhs(z, t, lambda_p, K, gamma_p, eta, KDE):
     return [dPdt, dCdt]
 
 
+import matplotlib.pyplot as plt
 
 
-def PlotOneSerie(t,__Observations, __Title=''):
-    import matplotlib.pyplot as plt
-    plt.rcParams['figure.figsize'] = (10, 4)
+def PlotOneSerie(t,__Observations, myplot,label='',color='black'):
+    # plt.rcParams['figure.figsize'] = (10, 4)
     #
-    plt.figure()
-    plt.plot(t,__Observations,'k-')
-    plt.title(__Title, fontweight='bold')
-    plt.xlabel('Step')
-    plt.ylabel('Value')
+
+    myplot.plot(t,__Observations,color=color,label=label)
+    myplot.set_xlabel('Step')
+    myplot.set_ylabel('Value')
 
 
 Yobs = groundTruthObservation
@@ -151,6 +156,8 @@ case.setObservationError   (ScalarSparseMatrix = 1.)
 case.setEvolutionModel     (OneFunction        = F)
 case.setEvolutionError     (ScalarSparseMatrix = 0.1**2)
 #
+
+
 case.setAlgorithmParameters(
     Algorithm="ExtendedKalmanFilter",
     Parameters={
@@ -158,8 +165,10 @@ case.setAlgorithmParameters(
             "Analysis",
             "APosterioriCovariance",
             "SimulatedObservationAtCurrentAnalysis",
-            ],
+            ]
+
         },
+
     )
 #
 # Loop to obtain an analysis at each observation arrival
@@ -181,27 +190,57 @@ Xs = [float(Pstar) for Pstar in case.get("SimulatedObservationAtCurrentAnalysis"
 print("")
 print("  Optimal state and parameters\n",Xa)
 
-names =["z", "t", "lambda_p", "K", "gamma_p", "eta", "KDE"]
+names =["P0", "C0", "lambda_p", "K", "gamma_p", "eta", "KDE"]
 params = {}
 for xa,name in zip(Xa,names):
     # print(f'{name}={xa}',end="; ")
     params[name] = xa
+# params['P0'] =initState[0]
+# params['C0'] =initState[1]
 print(params)
-
 print("  Final a posteriori variance:",Pa[-1])
 print("Simulated observations:\n",Xs)
 print("")
 
-print(len(t),len(Observations))
-# PlotOneSerie(t,Observations,"Observations KalmanFilter")
+# print(len(t),len(Observations))
+PlotOneSerie(t,Observations,plt1,"Observations KalmanFilter",color='black')
 print(len(t),len(Xs))
 
-PlotOneSerie(t[:-1],Xs,"Simulated observations KalmanFilter")
+PlotOneSerie(t[:-1],Xs,plt1,"Simulated observations KalmanFilter",color='yellow')
 
-plt.plot(t,P,color='red')
+dopasowanie = np.linalg.norm(np.array(Xs) - np.array(P[-1]), ord=2)
+print(f'Least square test: {dopasowanie}')
+
+
+#
+# plt.plot(t,P,color='red')
+
+def GS1(y, t, paras):
+    [P, C] = y
+    lambda_p = paras['lambda_p']
+    gamma_p = paras['gamma_p']
+    KDE = paras['KDE']
+    K = paras['K']
+    eta = paras['eta']
+    eta = eta*paras['C0']
+
+    dCdt =-KDE * C
+    dPdt = lambda_p * P*(1-P/K)  - gamma_p * unit_step_fun(C,eta)  * P
+    return [dPdt, dCdt]
+
+
+
+steps_forward = len(Xs)
+# print(steps_forward)
+t2 = np.linspace(0, steps_forward, steps_forward + 1)+threatment_start
+# print(t)
+initState = [params['P0'],params['C0']]
+x, info  = odeint(GS1, initState,t2,args=(params,),full_output=True)
+
+# t = np.arange(0,len(x))
+# print(x[:,0])
+plt2.plot(t,x[:,0],color='green')
 plt.show()
-
-
 #
 
 

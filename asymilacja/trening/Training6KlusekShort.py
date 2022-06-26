@@ -21,6 +21,7 @@ df = df[df.index % 20 == 0]
 P = list(df.prolif_cells)
 N = list(df.dead_cells)
 C = list(df.curement)
+C = list(map(lambda x: x*10**6,C))
 observation = np.array([P, N, C], dtype=float)
 
 t_span = np.array([list(df.t)[0], list(df.t)[-1]])
@@ -33,17 +34,17 @@ def model(parameters):
     lambda_p = parameters["lambda_p"]
     gamma_q = parameters["gamma_q"]
     gamma_p = parameters["gamma_p"]
-    KDE = parameters["KDE"]
+    KDE = 0.01
     k_pq = parameters["k_pq"]
     # K = parameters["K"]
     K = -1
     eta = parameters["eta"]
-    C0 = parameters["C0"]
-    y0 = [P[0], N[0], C0]
+    # C0 = C[0]
+    y0 = [P[0], N[0], C[0]]
 
     m1 = CancerModel(lambda_p, gamma_q, gamma_p, KDE, k_pq, K, eta)
     #    soln = solve_ivp(m1.model, t_span, y0, t_eval=times,method='BDF',rtol=1e9,atol=1e9)
-    sol = solve_ivp(m1.model, t_span, y0, t_eval=t, method='LSODA', rtol=1e9, atol=1e9)
+    sol = solve_ivp(m1.model, t_span, y0, t_eval=t, method='Radau',rtol=1e9, atol=1e9)
 
     if not sol.success:
         print(sol.message)
@@ -62,21 +63,23 @@ def distance(x, y):
 def distance1(x, y):
     return np.absolute(x["data"][1] - y["data"][1]).sum()
 
+def distance2(x, y):
+    return np.absolute(x["data"][2] - y["data"][2]).sum()
 
-dist = pyabc.distance.AggregatedDistance([distance, distance1])
+dist = pyabc.distance.AggregatedDistance([distance, distance1,distance2])
 
 prior = pyabc.Distribution(
-    KDE=pyabc.RV("uniform", 0.01, 1), k_pq=pyabc.RV("uniform", 0.01, 1),  # K=pyabc.RV("uniform", 50, 250),
+    KDE=pyabc.RV("uniform", 0.01, 1), k_pq=pyabc.RV("uniform", 0.01, 1),  # K=pyabc.RV("uniform", 50, 250), C0=pyabc.RV("uniform", 0.01, 10)
     lambda_p=pyabc.RV("uniform", 0.01, 1), gamma_p=pyabc.RV("uniform", 0.01, 1),
-    gamma_q=pyabc.RV("uniform", 0.01, 1), eta=pyabc.RV("uniform", 0.01, 1), C0=pyabc.RV("uniform", 0.01, 1))
+    gamma_q=pyabc.RV("uniform", 0.01, 1), eta=pyabc.RV("uniform", 0.01, 1))
 
-abc = pyabc.ABCSMC(model, prior, dist, population_size=10)
+abc = pyabc.ABCSMC(model, prior, dist, population_size=100)
 
 db_path = ("sqlite:///" + os.path.join(tempfile.gettempdir(), "test.db"))
 
 abc.new(db_path, {"data": observation})
 
-history = abc.run(minimum_epsilon=10, max_nr_populations=50)
+history = abc.run(minimum_epsilon=10, max_nr_populations=100)
 
 history is abc.history
 run_id = history.id

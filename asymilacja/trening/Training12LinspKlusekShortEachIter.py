@@ -66,7 +66,7 @@ t_true = list(df_true.iteration)
 
 fig, (plt1,plt2) = plt.subplots(2,1)
 fig.set_figheight(10)
-plt1.plot(t_true, P_true,color='black', linewidth=1, label='model Adriana')
+plt1.plot(t_true, P_true,color='black', linewidth=1, label='model czasowo-przestrzenny 3d')
 
 df = df_true
 # df = df_true[df_true.index < (6/6*threatment_time)+threatment_start]

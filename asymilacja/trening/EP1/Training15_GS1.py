@@ -44,7 +44,7 @@ t_true = list(df_true.iteration)
 
 
 df = df_true
-# df = df_true[df_true.index < (6/6*threatment_time)+threatment_start]
+# df = df_true[df_true.index < (2/6*threatment_time)+threatment_start]
 
 if df.empty:
     raise ValueError("No data provided!")
@@ -61,7 +61,7 @@ params = Parameters()
 params.add('P0', value=P[0], vary=False)
 params.add('C0', min=3, max=10)
 params.add('gamma_p',value=0.003, min=0.0001, max=0.01)
-params.add('K', value=maxi, min=0.9*maxi, max=1.1*maxi)
+params.add('K', value=maxi, min=0.9*maxi, max=2*maxi)
 # params.add('eta', expr='0.2*C0')
 params.add('eta', value=0.2, min=0.1, max=0.3) #uwaga eta jest modyfikowana w f, min=0.1 bedzie min=0.1*C0
 params.add('KDE', value=0.007, expr=f'-ln(eta)/({threatment_time}+200)')
@@ -88,6 +88,8 @@ plot_assimilation(t_true,P_true, P_fitted, C_fitted,params_eta,t=t,P=P,t_measure
 
 # display fitted statistics
 report_fit(result)
+dopasowanie = np.linalg.norm(P_fitted - P_true, ord=2)
+print(f'Least square test: {dopasowanie}')
 print(result.params.valuesdict())
 
 
